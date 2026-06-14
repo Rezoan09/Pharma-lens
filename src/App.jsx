@@ -76,37 +76,121 @@ function fmt(n, decimals = 2) {
 }
 
 // ── PDF Export — Screenshot-based full 4-tab report ──────────────────────────
-async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights, tabContentRef, setActiveTab, setExporting) {
+function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const tabs = ["overview", "charts", "distributions", "table"];
-  const tabLabels = { overview: "📋 Overview", charts: "📈 Visualizations", distributions: "🥧 Distributions", table: "🗃 Data Table" };
+  const chartColors = ["#0057a8","#0891b2","#059669","#7c3aed","#d97706","#e11d48","#0284c7","#65a30d"];
 
-  // Load html2canvas dynamically
-  setExporting(true);
-  const script = document.createElement("script");
-  script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-  document.head.appendChild(script);
-  await new Promise(res => { script.onload = res; });
+  // ── SVG: Horizontal Bar Chart (Mean Values) ──────────────────────────────
+  const barData = numStats.slice(0, 12);
+  const maxMean = Math.max(...barData.map(s => s.stats.mean), 1);
+  const barH = 28; const barGap = 8; const labelW = 120; const barAreaW = 480; const valW = 60;
+  const svgW = labelW + barAreaW + valW + 20;
+  const svgH = barData.length * (barH + barGap) + 30;
+  const meanBarsSVG = `<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="11">
+    ${barData.map((s, i) => {
+      const y = i * (barH + barGap);
+      const barW = Math.max(4, (s.stats.mean / maxMean) * barAreaW);
+      return `
+      <text x="${labelW - 6}" y="${y + barH / 2 + 4}" text-anchor="end" fill="#6b7a99" font-size="10">${s.key.length > 16 ? s.key.slice(0, 15) + "…" : s.key}</text>
+      <rect x="${labelW}" y="${y}" width="${barAreaW}" height="${barH}" fill="#f0f2f8" rx="4"/>
+      <rect x="${labelW}" y="${y}" width="${barW}" height="${barH}" fill="${chartColors[i % chartColors.length]}" rx="4"/>
+      <text x="${labelW + barAreaW + 8}" y="${y + barH / 2 + 4}" fill="#0f1729" font-size="10" font-weight="600">${fmt(s.stats.mean)}</text>`;
+    }).join("")}
+  </svg>`;
 
-  const screenshots = {};
-  for (const tab of tabs) {
-    setActiveTab(tab);
-    await new Promise(res => setTimeout(res, 900)); // wait for charts to render
-    if (tabContentRef.current) {
-      const canvas = await window.html2canvas(tabContentRef.current, {
-        scale: 1.5,
-        useCORS: true,
-        backgroundColor: "#f7f8fc",
-        logging: false,
-        windowWidth: 1200,
-      });
-      screenshots[tab] = canvas.toDataURL("image/png");
-    }
-  }
-  setActiveTab("overview");
-  setExporting(false);
+  // ── SVG: Range Distribution ───────────────────────────────────────────────
+  const rangeData = numStats.slice(0, 10);
+  const rowH = 52; const rLabelW = 130; const rBarW = 500;
+  const rSvgH = rangeData.length * rowH + 20;
+  const rangeBarsSVG = `<svg width="${rLabelW + rBarW + 20}" height="${rSvgH}" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="10">
+    ${rangeData.map((s, i) => {
+      const y = i * rowH;
+      const range = (s.stats.max - s.stats.min) || 1;
+      const q1x = rLabelW + ((s.stats.q1 - s.stats.min) / range) * rBarW;
+      const q3x = rLabelW + ((s.stats.q3 - s.stats.min) / range) * rBarW;
+      const meanX = rLabelW + ((s.stats.mean - s.stats.min) / range) * rBarW;
+      const medX = rLabelW + ((s.stats.median - s.stats.min) / range) * rBarW;
+      const c = chartColors[i % chartColors.length];
+      return `
+      <text x="${rLabelW - 6}" y="${y + 14}" text-anchor="end" fill="#0f1729" font-size="10" font-weight="600">${s.key.length > 17 ? s.key.slice(0,16)+"…" : s.key}</text>
+      <text x="${rLabelW - 6}" y="${y + 26}" text-anchor="end" fill="#6b7a99" font-size="9">μ=${fmt(s.stats.mean)} σ=${fmt(s.stats.std)}</text>
+      <rect x="${rLabelW}" y="${y + 4}" width="${rBarW}" height="18" fill="#e2e6f0" rx="4"/>
+      <rect x="${q1x}" y="${y + 4}" width="${Math.max(2, q3x - q1x)}" height="18" fill="${c}44" rx="2"/>
+      <rect x="${meanX - 2}" y="${y + 4}" width="4" height="18" fill="${c}" rx="1"/>
+      <rect x="${medX - 1}" y="${y + 4}" width="2" height="18" fill="${c}bb" rx="1"/>
+      <text x="${rLabelW}" y="${y + 38}" fill="#a0aec0" font-size="9">${fmt(s.stats.min)}</text>
+      <text x="${rLabelW + rBarW}" y="${y + 38}" text-anchor="end" fill="#a0aec0" font-size="9">${fmt(s.stats.max)}</text>`;
+    }).join("")}
+    <text x="${rLabelW}" y="${rSvgH - 2}" fill="#a0aec0" font-size="9">▌ Shaded = IQR (Q1–Q3)  |  Solid line = Mean  |  Faint line = Median</text>
+  </svg>`;
 
-  // Build the PDF HTML with embedded screenshots
+  // ── SVG: Category Frequency Bars ─────────────────────────────────────────
+  const catSVGs = catCols.slice(0, 4).map((col, ci) => {
+    const freq = {};
+    rows.forEach(r => { const v = String(r[col] ?? ""); if (v && v !== "undefined") freq[v] = (freq[v] || 0) + 1; });
+    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const total = sorted.reduce((a, b) => a + b[1], 0);
+    const maxCount = sorted[0]?.[1] || 1;
+    const cW = 360; const cRowH = 22; const cLW = 100; const cBarW = 180;
+    const cSvgH = sorted.length * cRowH + 28;
+    return `
+    <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;flex:1;min-width:260px;">
+      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${col}</div>
+      <svg width="100%" viewBox="0 0 ${cW} ${cSvgH}" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="10">
+        ${sorted.map(([name, count], i) => {
+          const y = i * cRowH + 4;
+          const bw = (count / maxCount) * cBarW;
+          const pct = ((count / total) * 100).toFixed(0);
+          const c = chartColors[i % chartColors.length];
+          const label = name.length > 12 ? name.slice(0, 11) + "…" : name;
+          return `
+          <rect x="2" y="${y + 2}" width="8" height="8" fill="${c}" rx="2"/>
+          <text x="14" y="${y + 11}" fill="#6b7a99" font-size="9">${label}</text>
+          <rect x="${cLW}" y="${y}" width="${cBarW}" height="14" fill="#f0f2f8" rx="3"/>
+          <rect x="${cLW}" y="${y}" width="${bw}" height="14" fill="${c}" rx="3"/>
+          <text x="${cLW + cBarW + 6}" y="${y + 11}" fill="#0f1729" font-size="9" font-weight="600">${count}</text>
+          <text x="${cLW + cBarW + 36}" y="${y + 11}" fill="#a0aec0" font-size="9">${pct}%</text>`;
+        }).join("")}
+      </svg>
+    </div>`;
+  }).join("");
+
+  // ── SVG: Numeric Distribution Cards ──────────────────────────────────────
+  const distCards = numStats.slice(0, 6).map((s, i) => {
+    const c = chartColors[i % chartColors.length];
+    const range = (s.stats.max - s.stats.min) || 1;
+    const q1Pct = ((s.stats.q1 - s.stats.min) / range) * 100;
+    const q3Pct = ((s.stats.q3 - s.stats.min) / range) * 100;
+    const meanPct = ((s.stats.mean - s.stats.min) / range) * 100;
+    return `
+    <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;border-top:3px solid ${c};">
+      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${s.key}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        ${[["Mean",fmt(s.stats.mean)],["Median",fmt(s.stats.median)],["Min",fmt(s.stats.min)],["Max",fmt(s.stats.max)],["Std Dev",fmt(s.stats.std)],["Outliers",s.stats.outliers > 0 ? "⚠ "+s.stats.outliers : "✓ 0"]].map(([l, v]) => `
+        <div style="background:#f7f8fc;border-radius:6px;padding:6px 8px;">
+          <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;letter-spacing:0.05em;font-family:'IBM Plex Mono',monospace;">${l}</div>
+          <div style="font-size:14px;font-weight:700;color:${c};">${v}</div>
+        </div>`).join("")}
+      </div>
+      <svg width="100%" height="20" viewBox="0 0 300 20" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="4" width="300" height="12" fill="#e2e6f0" rx="4"/>
+        <rect x="${q1Pct * 3}" y="4" width="${Math.max(2,(q3Pct-q1Pct)*3)}" height="12" fill="${c}44" rx="2"/>
+        <rect x="${meanPct * 3 - 2}" y="2" width="4" height="16" fill="${c}" rx="2"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+        <span>${fmt(s.stats.min)}</span><span>${fmt(s.stats.max)}</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  // ── Data Table ────────────────────────────────────────────────────────────
+  const tableCols = cols.slice(0, 10);
+  const tableRows = rows.slice(0, 50).map((row, ri) => `
+    <tr style="background:${ri % 2 === 0 ? "#fff" : "#f7f8fc"}">
+      <td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">${ri+1}</td>
+      ${tableCols.map(c => `<td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;font-family:'IBM Plex Mono',monospace;color:${numCols.includes(c)?"#0057a8":"#0f1729"};white-space:nowrap;">${String(row[c] ?? "")}</td>`).join("")}
+    </tr>`).join("");
+
   const insightRows = insights.map((ins, i) => `
     <tr>
       <td style="padding:7px 10px;border-bottom:1px solid #e2e6f0;color:#6b7a99;font-size:11px;width:24px;">${i+1}</td>
@@ -115,13 +199,13 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
 
   const statRows = numStats.map(s => `
     <tr>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;">${s.key}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;">${s.key}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.mean)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.median)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.min)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.max)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.std)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:${s.stats.outliers > 0 ? "#e11d48" : "#059669"};font-weight:${s.stats.outliers > 0 ? "700" : "400"};">${s.stats.outliers > 0 ? "⚠ " + s.stats.outliers : "✓ 0"}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:${s.stats.outliers>0?"#e11d48":"#059669"};font-weight:${s.stats.outliers>0?"700":"400"};">${s.stats.outliers>0?"⚠ "+s.stats.outliers:"✓ 0"}</td>
     </tr>`).join("");
 
   const w = window.open("", "_blank");
@@ -130,13 +214,13 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Source Serif 4',Georgia,serif;color:#0f1729;background:#fff;font-size:13px;}
+    body{font-family:'Source Serif 4',Georgia,serif;color:#0f1729;background:#fff;}
     .page{padding:36px 44px;max-width:960px;margin:0 auto;}
-    h2{font-size:14px;font-weight:700;color:#0057a8;margin:0 0 14px;padding:9px 14px;background:#e8f0fb;border-radius:8px;border-left:4px solid #0057a8;}
+    h2{font-size:13px;font-weight:700;color:#0057a8;margin:0 0 16px;padding:8px 14px;background:#e8f0fb;border-radius:8px;border-left:4px solid #0057a8;}
     table{width:100%;border-collapse:collapse;}
     thead th{background:#0057a8;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
-    .section{page-break-before:always;padding-top:24px;}
-    .screenshot{width:100%;border-radius:10px;border:1px solid #e2e6f0;display:block;}
+    .section{page-break-before:always;padding-top:28px;}
+    .flex-row{display:flex;gap:14px;flex-wrap:wrap;}
     @media print{
       body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
       .no-print{display:none;}
@@ -148,11 +232,11 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
   <div style="border-bottom:3px solid #0057a8;padding-bottom:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
     <div>
       <div style="font-size:10px;letter-spacing:0.18em;color:#6b7a99;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;">⚕ PharmaLens · Clinical Research Intelligence Report</div>
-      <div style="font-size:24px;font-weight:700;color:#0057a8;">${fileName.replace(/\.[^.]+$/, "")}</div>
+      <div style="font-size:22px;font-weight:700;color:#0057a8;">${fileName.replace(/\.[^.]+$/, "")}</div>
       <div style="color:#6b7a99;font-size:11px;margin-top:5px;">Generated on ${date} · by Rebiconn · Powered by Claude AI</div>
     </div>
     <div style="text-align:right;">
-      <div style="font-size:32px;font-weight:700;color:#0057a8;font-family:'Source Serif 4',serif;">${rows.length.toLocaleString()}</div>
+      <div style="font-size:32px;font-weight:700;color:#0057a8;">${rows.length.toLocaleString()}</div>
       <div style="font-size:10px;color:#6b7a99;">Total Records</div>
     </div>
   </div>
@@ -162,19 +246,18 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
     ${[["📋 Records",rows.length.toLocaleString(),"#0057a8"],["📐 Variables",cols.length,"#0891b2"],["🔢 Numeric",numStats.length,"#059669"],["🏷️ Categorical",(cols.length-numStats.length),"#7c3aed"]].map(([l,v,c])=>`
     <div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;border-top:3px solid ${c};text-align:center;">
       <div style="font-size:9px;color:#6b7a99;margin-bottom:3px;font-family:'IBM Plex Mono',monospace;">${l}</div>
-      <div style="font-size:22px;font-weight:700;color:${c};font-family:'Source Serif 4',serif;">${v}</div>
+      <div style="font-size:22px;font-weight:700;color:${c};">${v}</div>
     </div>`).join("")}
   </div>
 
-  <!-- AI INSIGHTS -->
-  <h2>AI-Generated Clinical Insights</h2>
+  <!-- SECTION 1: OVERVIEW -->
+  <h2>📋 Section 1 — AI Clinical Insights</h2>
   <table style="margin-bottom:20px;">
     <thead><tr><th style="width:28px;">#</th><th>Insight</th></tr></thead>
     <tbody>${insightRows}</tbody>
   </table>
 
-  <!-- STATS TABLE -->
-  <h2 style="margin-top:20px;">Variable Statistics — Complete Summary</h2>
+  <h2 style="margin-top:20px;">Variable Statistics</h2>
   <table>
     <thead><tr>
       <th>Variable</th>
@@ -185,22 +268,46 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
     <tbody>${statRows}</tbody>
   </table>
 
-  <!-- SECTION 2: CHARTS SCREENSHOT -->
+  <!-- SECTION 2: VISUALIZATIONS -->
   <div class="section">
-    <h2>📈 Visualizations</h2>
-    <img src="${screenshots.charts || ''}" class="screenshot" />
+    <h2>📈 Section 2 — Visualizations</h2>
+    <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;">Mean Values by Variable</div>
+    <div style="background:#f7f8fc;border:1px solid #e2e6f0;border-radius:10px;padding:16px;margin-bottom:20px;overflow-x:auto;">
+      ${meanBarsSVG}
+    </div>
+    <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;">Range Distribution (Min → IQR → Max)</div>
+    <div style="background:#f7f8fc;border:1px solid #e2e6f0;border-radius:10px;padding:16px;overflow-x:auto;">
+      ${rangeBarsSVG}
+    </div>
   </div>
 
-  <!-- SECTION 3: DISTRIBUTIONS SCREENSHOT -->
+  <!-- SECTION 3: DISTRIBUTIONS -->
   <div class="section">
-    <h2>🥧 Distributions</h2>
-    <img src="${screenshots.distributions || ''}" class="screenshot" />
+    <h2>🥧 Section 3 — Distributions</h2>
+    ${catCols.length > 0 ? `
+    <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;">Categorical Variables</div>
+    <div class="flex-row" style="margin-bottom:20px;">${catSVGs}</div>` : ""}
+    <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;">Numeric Variable Distributions</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">${distCards}</div>
   </div>
 
-  <!-- SECTION 4: TABLE SCREENSHOT -->
+  <!-- SECTION 4: DATA TABLE -->
   <div class="section">
-    <h2>🗃 Data Table</h2>
-    <img src="${screenshots.table || ''}" class="screenshot" />
+    <h2>🗃 Section 4 — Data Table</h2>
+    <div style="font-size:11px;color:#6b7a99;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">
+      First 50 of ${rows.length.toLocaleString()} records · ${cols.length > 10 ? "First 10 columns" : cols.length+" columns"} ·
+      <span style="color:#0057a8">●</span> Numeric &nbsp;<span style="color:#d97706">●</span> Categorical
+    </div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr>
+        <th>#</th>
+        ${tableCols.map(c => `<th><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${numCols.includes(c)?"#60d0ff":"#fbbf24"};margin-right:3px;"></span>${c}</th>`).join("")}
+      </tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+    </div>
+    ${rows.length > 50 ? `<div style="margin-top:8px;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">… and ${(rows.length-50).toLocaleString()} more records not shown.</div>` : ""}
   </div>
 
   <!-- FOOTER -->
@@ -210,13 +317,12 @@ async function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insig
   </div>
 
   <div style="text-align:center;margin-top:20px;" class="no-print">
-    <button onclick="window.print()" style="background:#0057a8;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Source Serif 4',serif;font-weight:600;">🖨 Print / Save as PDF</button>
-    <p style="font-size:10px;color:#a0aec0;margin-top:6px;font-family:'IBM Plex Mono',monospace;">Set margins to None or Minimal for best results</p>
+    <button onclick="window.print()" style="background:#0057a8;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">🖨 Print / Save as PDF</button>
+    <p style="font-size:10px;color:#a0aec0;margin-top:6px;font-family:'IBM Plex Mono',monospace;">Set page margins to None for best results</p>
   </div>
 
   </div></body></html>`);
   w.document.close();
-}
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -552,10 +658,9 @@ export default function PharmaLens() {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span style={{ background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>n = {rawData.length.toLocaleString()}</span>
           <span style={{ background: T.tealLight, color: T.teal, border: `1px solid ${T.teal}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>{columns.length} variables</span>
-          <button onClick={() => exportPDF(fileName, rawData, columns, numericCols, catCols, numericStats, insights, tabContentRef, setActiveTab, setExporting)}
-            disabled={exporting}
-            style={{ background: exporting ? T.muted : T.primary, color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: exporting ? "not-allowed" : "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif", fontWeight: 600, display: "flex", alignItems: "center", gap: 6, opacity: exporting ? 0.7 : 1 }}>
-            {exporting ? "⏳ Capturing…" : "📄 Export PDF"}
+          <button onClick={() => exportPDF(fileName, rawData, columns, numericCols, catCols, numericStats, insights)}
+            style={{ background: T.primary, color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+            📄 Export PDF
           </button>
           <button onClick={() => { setStage("upload"); setRawData([]); }}
             style={{ background: T.white, color: T.muted, border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif" }}>
