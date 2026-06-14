@@ -229,16 +229,13 @@ async function getInsights(totalRows, numStats, catCols, colNames) {
     allColumns: colNames,
   };
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("/api/insights", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 1000,
       system: `You are a clinical data analyst specializing in pharmaceutical research. Given dataset statistics, return ONLY a valid JSON array of exactly 6 insight strings. No markdown, no backticks, no preamble. Each insight should be 1-2 sentences, clinically relevant, specific to the numbers, and actionable. Mention actual column names and values where possible. Format exactly: ["insight1","insight2","insight3","insight4","insight5","insight6"]`,
       messages: [{ role: "user", content: `Analyze this clinical dataset and provide 6 key insights:\n${JSON.stringify(summary, null, 2)}` }],
