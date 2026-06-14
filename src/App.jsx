@@ -75,67 +75,249 @@ function fmt(n, decimals = 2) {
   return num % 1 === 0 ? num.toLocaleString() : num.toFixed(decimals);
 }
 
-// ── PDF Export ────────────────────────────────────────────────────────────────
-function exportPDF(fileName, rows, cols, numStats, insights) {
+// ── PDF Export — Full 4-Tab Report ───────────────────────────────────────────
+function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   const w = window.open("", "_blank");
   const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const insightRows = insights.map((ins, i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;color:#6b7a99;font-size:13px;">${i + 1}</td><td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;font-size:13px;">${ins}</td></tr>`).join("");
-  const statRows = numStats.slice(0, 10).map(s => `
-    <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;font-weight:500;">${s.key}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;">${fmt(s.stats.mean)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;">${fmt(s.stats.median)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;">${fmt(s.stats.min)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;">${fmt(s.stats.max)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;">${fmt(s.stats.std)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;text-align:right;color:${s.stats.outliers > 0 ? "#e11d48" : "#059669"};">${s.stats.outliers}</td>
-    </tr>`).join("");
-  const dataRows = rows.slice(0, 30).map((row, ri) =>
-    `<tr>${cols.slice(0, 8).map(c => `<td style="padding:6px 10px;border-bottom:1px solid #f0f2f8;font-size:11px;">${String(row[c] ?? "")}</td>`).join("")}</tr>`
-  ).join("");
 
-  w.document.write(`<!DOCTYPE html><html><head><title>Clinical Report — ${fileName}</title>
+  // ── Section 1: Overview ──
+  const insightRows = insights.map((ins, i) => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;color:#6b7a99;font-size:12px;width:28px;">${i+1}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e6f0;font-size:12px;line-height:1.6;">${ins}</td>
+    </tr>`).join("");
+
+  const statRows = numStats.map(s => `
+    <tr>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;">${s.key}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.mean)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.median)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.min)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.max)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.std)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.q1)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;">${fmt(s.stats.q3)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:${s.stats.outliers > 0 ? "#e11d48" : "#059669"};font-weight:${s.stats.outliers > 0 ? "700" : "400"};">${s.stats.outliers > 0 ? "⚠ " + s.stats.outliers : "✓ 0"}</td>
+    </tr>`).join("");
+
+  // ── Section 2: Visualizations (bar charts as HTML) ──
+  const chartColors = ["#0057a8","#0891b2","#059669","#7c3aed","#d97706","#e11d48","#0284c7","#65a30d"];
+  const maxMean = Math.max(...numStats.map(s => s.stats.mean));
+  const meanBars = numStats.slice(0, 10).map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:130px;font-size:10px;color:#6b7a99;font-family:'IBM Plex Mono',monospace;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${s.key}">${s.key}</div>
+      <div style="flex:1;background:#f0f2f8;border-radius:4px;height:20px;position:relative;">
+        <div style="height:100%;width:${Math.max(2,(s.stats.mean/maxMean)*100)}%;background:${chartColors[i%chartColors.length]};border-radius:4px;"></div>
+      </div>
+      <div style="width:60px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#0f1729;text-align:right;">${fmt(s.stats.mean)}</div>
+    </div>`).join("");
+
+  const rangeBars = numStats.slice(0, 8).map((s, i) => {
+    const range = s.stats.max - s.stats.min || 1;
+    const minPct = 0;
+    const meanPct = ((s.stats.mean - s.stats.min) / range) * 100;
+    const maxPct = 100;
+    const q1Pct = ((s.stats.q1 - s.stats.min) / range) * 100;
+    const q3Pct = ((s.stats.q3 - s.stats.min) / range) * 100;
+    return `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:600;color:#0f1729;font-family:'IBM Plex Mono',monospace;">${s.key}</span>
+        <span style="font-size:10px;color:#6b7a99;font-family:'IBM Plex Mono',monospace;">mean=${fmt(s.stats.mean)} · sd=${fmt(s.stats.std)}</span>
+      </div>
+      <div style="position:relative;height:14px;background:#e2e6f0;border-radius:7px;overflow:hidden;">
+        <div style="position:absolute;height:100%;left:${q1Pct}%;width:${q3Pct-q1Pct}%;background:${chartColors[i%chartColors.length]}33;"></div>
+        <div style="position:absolute;top:0;bottom:0;width:3px;left:${meanPct}%;background:${chartColors[i%chartColors.length]};border-radius:2px;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;">
+        <span style="font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">${fmt(s.stats.min)}</span>
+        <span style="font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">${fmt(s.stats.max)}</span>
+      </div>
+    </div>`}).join("");
+
+  // ── Section 3: Distributions ──
+  const distCards = numStats.slice(0, 6).map((s, i) => `
+    <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;border-top:3px solid ${chartColors[i%chartColors.length]};">
+      <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${s.key}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        ${[["Mean",fmt(s.stats.mean)],["Median",fmt(s.stats.median)],["Min",fmt(s.stats.min)],["Max",fmt(s.stats.max)],["Std Dev",fmt(s.stats.std)],["Outliers",(s.stats.outliers > 0 ? "⚠ "+s.stats.outliers : "✓ 0")]].map(([l,v])=>`
+        <div style="background:#f7f8fc;border-radius:6px;padding:6px 8px;">
+          <div style="font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.05em;">${l}</div>
+          <div style="font-size:13px;font-weight:700;color:${chartColors[i%chartColors.length]};">${v}</div>
+        </div>`).join("")}
+      </div>
+    </div>`).join("");
+
+  // ── Section 4: Data Table ──
+  const dataRows = rows.slice(0, 50).map((row, ri) =>
+    `<tr style="background:${ri%2===0?"#fff":"#f7f8fc"}">
+      <td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">${ri+1}</td>
+      ${cols.slice(0, 10).map(c => `<td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;font-family:'IBM Plex Mono',monospace;color:${numCols.includes(c)?"#0057a8":"#0f1729"};white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;">${String(row[c] ?? "")}</td>`).join("")}
+    </tr>`).join("");
+
+  const colHeaders = cols.slice(0, 10).map(c =>
+    `<th style="padding:7px 8px;text-align:left;font-size:10px;background:#0057a8;color:#fff;font-family:'IBM Plex Mono',monospace;white-space:nowrap;">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${numCols.includes(c)?"#60d0ff":"#fbbf24"};margin-right:4px;"></span>${c}
+    </th>`).join("");
+
+  w.document.write(`<!DOCTYPE html><html><head>
+  <title>PharmaLens Report — ${fileName}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-    body{font-family:'Source Serif 4',Georgia,serif;color:#0f1729;background:#fff;margin:0;padding:40px 60px;}
-    h1{font-size:28px;font-weight:700;color:#0057a8;margin:0 0 4px;}
-    h2{font-size:16px;font-weight:600;color:#0057a8;margin:32px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e6f0;}
-    table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;}
-    thead th{background:#0057a8;color:#fff;padding:8px 12px;text-align:left;font-size:12px;font-weight:500;}
-    .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
-    @media print{body{padding:20px;} button{display:none;}}
-  </style></head><body>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Source Serif 4',Georgia,serif;color:#0f1729;background:#fff;font-size:13px;}
+    .page{padding:40px 48px;max-width:1000px;margin:0 auto;}
+    h1{font-size:26px;font-weight:700;color:#0057a8;margin:0 0 4px;}
+    h2{font-size:15px;font-weight:700;color:#0057a8;margin:36px 0 14px;padding:10px 16px;background:#e8f0fb;border-radius:8px;border-left:4px solid #0057a8;display:flex;align-items:center;gap:8px;}
+    h3{font-size:13px;font-weight:600;color:#0f1729;margin:0 0 10px;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{background:#0057a8;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+    .section-break{page-break-before:always;padding-top:20px;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+    .card{border:1px solid #e2e6f0;border-radius:10px;padding:16px;}
+    @media print{
+      body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      .no-print{display:none;}
+      .section-break{page-break-before:always;}
+    }
+  </style>
+  </head><body><div class="page">
+
+  <!-- COVER HEADER -->
   <div style="border-bottom:3px solid #0057a8;padding-bottom:20px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;">
     <div>
-      <div style="font-size:11px;letter-spacing:0.12em;color:#6b7a99;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;">Clinical Research Intelligence Report</div>
+      <div style="font-size:10px;letter-spacing:0.18em;color:#6b7a99;text-transform:uppercase;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">⚕ PharmaLens · Clinical Research Intelligence Report</div>
       <h1>${fileName.replace(/\.[^.]+$/, "")}</h1>
-      <div style="color:#6b7a99;font-size:13px;margin-top:4px;">Generated on ${date} · Powered by PharmaLens AI</div>
+      <div style="color:#6b7a99;font-size:12px;margin-top:6px;">Generated on ${date} · by Rebiconn · Powered by Claude AI</div>
     </div>
     <div style="text-align:right;">
-      <div style="font-size:32px;font-weight:700;color:#0057a8;">${rows.length.toLocaleString()}</div>
-      <div style="font-size:12px;color:#6b7a99;">Patient / Data Records</div>
+      <div style="font-size:36px;font-weight:700;color:#0057a8;font-family:'Source Serif 4',serif;">${rows.length.toLocaleString()}</div>
+      <div style="font-size:11px;color:#6b7a99;">Total Records</div>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
-    ${[["Records","📋",rows.length.toLocaleString(),"#0057a8"],["Columns","📐",cols.length,"#0891b2"],["Numeric","🔢",numStats.length,"#059669"],["Text Cols","🏷️",cols.length - numStats.length,"#7c3aed"]].map(([l,i,v,c])=>`<div style="border:1px solid #e2e6f0;border-radius:10px;padding:16px;border-top:3px solid ${c};"><div style="font-size:11px;color:#6b7a99;margin-bottom:4px;">${i} ${l}</div><div style="font-size:24px;font-weight:700;color:${c};">${v}</div></div>`).join("")}
+  <!-- KPI CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+    ${[["📋 Records",rows.length.toLocaleString(),"#0057a8"],["📐 Variables",cols.length,"#0891b2"],["🔢 Numeric",numStats.length,"#059669"],["🏷️ Categorical",(cols.length-numStats.length),"#7c3aed"]].map(([l,v,c])=>`
+    <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;border-top:3px solid ${c};text-align:center;">
+      <div style="font-size:10px;color:#6b7a99;margin-bottom:4px;font-family:'IBM Plex Mono',monospace;">${l}</div>
+      <div style="font-size:26px;font-weight:700;color:${c};font-family:'Source Serif 4',serif;">${v}</div>
+    </div>`).join("")}
   </div>
 
-  <h2>AI-Generated Clinical Insights</h2>
-  <table><thead><tr><th style="width:40px;">#</th><th>Insight</th></tr></thead><tbody>${insightRows}</tbody></table>
+  <!-- ══ SECTION 1: OVERVIEW ══ -->
+  <h2>📋 Section 1 — Overview & AI Clinical Insights</h2>
+  <table style="margin-bottom:20px;">
+    <thead><tr><th style="width:32px;">#</th><th>AI-Generated Clinical Insight</th></tr></thead>
+    <tbody>${insightRows}</tbody>
+  </table>
 
-  <h2>Statistical Summary — Numeric Variables</h2>
-  <table><thead><tr><th>Variable</th><th style="text-align:right;">Mean</th><th style="text-align:right;">Median</th><th style="text-align:right;">Min</th><th style="text-align:right;">Max</th><th style="text-align:right;">Std Dev</th><th style="text-align:right;">Outliers</th></tr></thead><tbody>${statRows}</tbody></table>
+  <!-- FULL STATS TABLE -->
+  <h3 style="margin-top:24px;margin-bottom:10px;">Variable Statistics — Complete Summary</h3>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead><tr>
+      <th>Variable</th>
+      <th style="text-align:right;">Mean</th>
+      <th style="text-align:right;">Median</th>
+      <th style="text-align:right;">Min</th>
+      <th style="text-align:right;">Max</th>
+      <th style="text-align:right;">Std Dev</th>
+      <th style="text-align:right;">Q1</th>
+      <th style="text-align:right;">Q3</th>
+      <th style="text-align:right;">Outliers</th>
+    </tr></thead>
+    <tbody>${statRows}</tbody>
+  </table>
+  </div>
 
-  <h2>Raw Data Preview (First 30 Records · ${cols.length > 8 ? "First 8 columns shown" : "All columns"})</h2>
-  <table><thead><tr>${cols.slice(0, 8).map(c => `<th style="font-size:11px;">${c}</th>`).join("")}</tr></thead><tbody>${dataRows}</tbody></table>
+  <!-- ══ SECTION 2: VISUALIZATIONS ══ -->
+  <div class="section-break">
+  <h2>📈 Section 2 — Visualizations</h2>
 
-  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e2e6f0;display:flex;justify-content:space-between;font-size:11px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">
-    <span>PharmaLens Clinical Intelligence · Confidential</span>
+  <h3>Mean Values by Variable</h3>
+  <div style="background:#f7f8fc;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #e2e6f0;">
+    ${meanBars}
+    <div style="display:flex;gap:16px;margin-top:12px;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">
+      <span>▌ Bar length = mean value relative to highest mean</span>
+    </div>
+  </div>
+
+  <h3>Range Distribution (Min → IQR → Max)</h3>
+  <div style="background:#f7f8fc;border-radius:12px;padding:20px;border:1px solid #e2e6f0;">
+    ${rangeBars}
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">
+      <span>▌ Colored band = IQR (Q1–Q3) &nbsp;|&nbsp; Vertical line = Mean</span>
+    </div>
+  </div>
+  </div>
+
+  <!-- ══ SECTION 3: DISTRIBUTIONS ══ -->
+  <div class="section-break">
+  <h2>🥧 Section 3 — Variable Distributions</h2>
+  <div class="grid-3" style="margin-bottom:24px;">
+    ${distCards}
+  </div>
+
+  ${catCols.length > 0 ? `
+  <h3 style="margin-bottom:12px;">Categorical Variables</h3>
+  <div class="grid-2">
+    ${catCols.slice(0,4).map((col, ci) => {
+      const freq = {};
+      rows.forEach(r => { const v = String(r[col]??""); if(v&&v!=="undefined") freq[v]=(freq[v]||0)+1; });
+      const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const total = sorted.reduce((a,b)=>a+b[1],0);
+      return `<div class="card">
+        <div style="font-size:11px;font-weight:600;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${col}</div>
+        ${sorted.map(([name,count],i)=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="width:8px;height:8px;border-radius:2px;background:${chartColors[i%chartColors.length]};flex-shrink:0;"></div>
+          <div style="flex:1;font-size:10px;color:#6b7a99;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name.length>20?name.slice(0,19)+"…":name}</div>
+          <div style="flex:2;height:8px;background:#f0f2f8;border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${(count/sorted[0][1])*100}%;background:${chartColors[i%chartColors.length]};border-radius:4px;"></div>
+          </div>
+          <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#0f1729;min-width:28px;text-align:right;">${count}</div>
+          <div style="font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;min-width:30px;text-align:right;">${((count/total)*100).toFixed(0)}%</div>
+        </div>`).join("")}
+      </div>`;
+    }).join("")}
+  </div>` : ""}
+  </div>
+
+  <!-- ══ SECTION 4: DATA TABLE ══ -->
+  <div class="section-break">
+  <h2>🗃 Section 4 — Data Table</h2>
+  <div style="font-size:11px;color:#6b7a99;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;">
+    Showing first 50 of ${rows.length.toLocaleString()} records · ${cols.length > 10 ? "First 10 columns shown" : "All "+cols.length+" columns"} ·
+    <span style="color:#0057a8">●</span> Numeric &nbsp;
+    <span style="color:#d97706">●</span> Categorical
+  </div>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead><tr>
+      <th style="background:#0057a8;color:#fff;padding:7px 8px;font-size:10px;font-family:'IBM Plex Mono',monospace;">#</th>
+      ${colHeaders}
+    </tr></thead>
+    <tbody>${dataRows}</tbody>
+  </table>
+  </div>
+  ${rows.length > 50 ? `<div style="margin-top:10px;font-size:11px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">... and ${(rows.length-50).toLocaleString()} more records not shown.</div>` : ""}
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:48px;padding-top:16px;border-top:1px solid #e2e6f0;display:flex;justify-content:space-between;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">
+    <span>PharmaLens Clinical Intelligence · by Rebiconn · Confidential</span>
     <span>${date}</span>
   </div>
-  <div style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="background:#0057a8;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-size:14px;cursor:pointer;font-family:'Source Serif 4',serif;">🖨 Print / Save as PDF</button></div>
-  </body></html>`);
+
+  <div style="text-align:center;margin-top:24px;" class="no-print">
+    <button onclick="window.print()" style="background:#0057a8;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:14px;cursor:pointer;font-family:'Source Serif 4',serif;font-weight:600;box-shadow:0 4px 12px rgba(0,87,168,0.3);">🖨 Print / Save as PDF</button>
+    <p style="font-size:11px;color:#a0aec0;margin-top:8px;font-family:'IBM Plex Mono',monospace;">Tip: Set margins to "None" or "Minimal" for best results</p>
+  </div>
+
+  </div></body></html>`);
   w.document.close();
 }
 
@@ -229,13 +411,16 @@ async function getInsights(totalRows, numStats, catCols, colNames) {
     allColumns: colNames,
   };
 
-  const res = await fetch("/api/insights", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
       system: `You are a clinical data analyst specializing in pharmaceutical research. Given dataset statistics, return ONLY a valid JSON array of exactly 6 insight strings. No markdown, no backticks, no preamble. Each insight should be 1-2 sentences, clinically relevant, specific to the numbers, and actionable. Mention actual column names and values where possible. Format exactly: ["insight1","insight2","insight3","insight4","insight5","insight6"]`,
       messages: [{ role: "user", content: `Analyze this clinical dataset and provide 6 key insights:\n${JSON.stringify(summary, null, 2)}` }],
@@ -467,7 +652,7 @@ export default function PharmaLens() {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span style={{ background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>n = {rawData.length.toLocaleString()}</span>
           <span style={{ background: T.tealLight, color: T.teal, border: `1px solid ${T.teal}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>{columns.length} variables</span>
-          <button onClick={() => exportPDF(fileName, rawData, columns, numericStats, insights)}
+          <button onClick={() => exportPDF(fileName, rawData, columns, numericCols, catCols, numericStats, insights)}
             style={{ background: T.primary, color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
             📄 Export PDF
           </button>
