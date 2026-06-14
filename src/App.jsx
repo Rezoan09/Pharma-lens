@@ -523,71 +523,182 @@ export default function PharmaLens() {
 
   // ── UPLOAD ────────────────────────────────────────────────────────────────
   if (stage === "upload") return (
-    <div style={{ ...commonStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "#020b18", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Syne', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: ${T.surface}; }
-        ::-webkit-scrollbar-thumb { background: ${T.borderStrong}; border-radius: 3px; }
-        .dropzone:hover { border-color: ${T.primary} !important; background: ${T.primaryLight} !important; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Animated gradient orbs */
+        @keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
+        @keyframes orb2 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-30px,40px) scale(0.95);} }
+        @keyframes orb3 { 0%,100%{transform:translate(0,0);} 33%{transform:translate(20px,20px);} 66%{transform:translate(-20px,-10px);} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes scanline { 0%{top:-10%;} 100%{top:110%;} }
+        @keyframes pulse-ring { 0%{transform:scale(0.95);opacity:1;} 100%{transform:scale(1.6);opacity:0;} }
+        @keyframes glow-flicker { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+        @keyframes grid-drift { from{background-position:0 0;} to{background-position:40px 40px;} }
+
+        .upload-card { animation: fadeUp 0.7s ease forwards; }
+        .upload-card-delay1 { animation: fadeUp 0.7s 0.1s ease both; }
+        .upload-card-delay2 { animation: fadeUp 0.7s 0.2s ease both; }
+        .upload-card-delay3 { animation: fadeUp 0.7s 0.35s ease both; }
+
+        .drop-zone {
+          border: 1.5px solid rgba(0,180,255,0.25);
+          border-radius: 20px;
+          padding: 52px 32px;
+          text-align: center;
+          background: rgba(0,180,255,0.03);
+          cursor: pointer;
+          transition: all 0.3s;
+          position: relative;
+          overflow: hidden;
+        }
+        .drop-zone::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(0,180,255,0.05) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .drop-zone:hover {
+          border-color: rgba(0,180,255,0.6) !important;
+          background: rgba(0,180,255,0.07) !important;
+          box-shadow: 0 0 40px rgba(0,180,255,0.12), inset 0 0 40px rgba(0,180,255,0.04);
+        }
+        .feature-pill {
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 16px;
+          border: 1px solid rgba(0,180,255,0.15);
+          border-radius: 99px;
+          font-size: 11px;
+          color: rgba(150,200,255,0.7);
+          font-family: 'Space Mono', monospace;
+          background: rgba(0,180,255,0.04);
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+        .feature-pill:hover {
+          border-color: rgba(0,180,255,0.4);
+          color: rgba(150,200,255,1);
+          background: rgba(0,180,255,0.08);
+        }
+        .ext-tag {
+          background: rgba(0,180,255,0.08);
+          color: #00b4ff;
+          border: 1px solid rgba(0,180,255,0.25);
+          border-radius: 6px;
+          padding: 4px 12px;
+          font-size: 11px;
+          font-family: 'Space Mono', monospace;
+          letter-spacing: 0.05em;
+        }
+        .corner-tl, .corner-tr, .corner-bl, .corner-br {
+          position: absolute; width: 14px; height: 14px;
+        }
+        .corner-tl { top: 12px; left: 12px; border-top: 1.5px solid #00b4ff; border-left: 1.5px solid #00b4ff; border-radius: 3px 0 0 0; }
+        .corner-tr { top: 12px; right: 12px; border-top: 1.5px solid #00b4ff; border-right: 1.5px solid #00b4ff; border-radius: 0 3px 0 0; }
+        .corner-bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid #00b4ff; border-left: 1.5px solid #00b4ff; border-radius: 0 0 0 3px; }
+        .corner-br { bottom: 12px; right: 12px; border-bottom: 1.5px solid #00b4ff; border-right: 1.5px solid #00b4ff; border-radius: 0 0 3px 0; }
+        .scanline {
+          position: absolute; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(0,180,255,0.4), transparent);
+          animation: scanline 3.5s linear infinite;
+          pointer-events: none;
+        }
       `}</style>
 
-      {/* Subtle grid background */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: `linear-gradient(${T.border} 1px, transparent 1px), linear-gradient(90deg, ${T.border} 1px, transparent 1px)`, backgroundSize: "32px 32px", opacity: 0.5, pointerEvents: "none" }} />
+      {/* ── Deep space background ── */}
+      {/* Animated grid */}
+      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(0,180,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,180,255,0.06) 1px, transparent 1px)", backgroundSize: "48px 48px", animation: "grid-drift 8s linear infinite", pointerEvents: "none" }} />
 
-      <div style={{ position: "relative", maxWidth: 580, width: "90%", animation: "fadeUp 0.5s ease" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: T.primary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>⚕️</div>
-            <div>
-              <div style={{ fontSize: 11, letterSpacing: "0.2em", color: T.muted, textTransform: "uppercase", fontFamily: "'IBM Plex Mono', monospace" }}>Clinical Research Intelligence</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: T.primary, lineHeight: 1, fontFamily: "'Source Serif 4', serif" }}>PharmaLens</div>
+      {/* Glow orbs */}
+      <div style={{ position: "fixed", top: "15%", left: "10%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,87,168,0.18) 0%, transparent 70%)", animation: "orb1 8s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "fixed", bottom: "10%", right: "8%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,140,200,0.12) 0%, transparent 70%)", animation: "orb2 10s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,60,120,0.1) 0%, transparent 70%)", animation: "orb3 12s ease-in-out infinite", pointerEvents: "none" }} />
+
+      {/* Scanline effect */}
+      <div className="scanline" />
+
+      {/* ── Content ── */}
+      <div style={{ position: "relative", maxWidth: 620, width: "92%", zIndex: 2 }}>
+
+        {/* Logo + badge */}
+        <div className="upload-card" style={{ textAlign: "center", marginBottom: 44 }}>
+          {/* Status badge */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 28, background: "rgba(0,180,255,0.07)", border: "1px solid rgba(0,180,255,0.2)", borderRadius: 99, padding: "5px 14px" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00e676", boxShadow: "0 0 8px #00e676", display: "inline-block", animation: "glow-flicker 2s ease-in-out infinite" }} />
+            <span style={{ fontSize: 10, color: "rgba(150,220,255,0.8)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.15em", textTransform: "uppercase" }}>AI System Online</span>
+          </div>
+
+          {/* Brand */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 20 }}>
+            {/* Icon with pulse ring */}
+            <div style={{ position: "relative", width: 54, height: 54 }}>
+              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(0,180,255,0.4)", animation: "pulse-ring 2s ease-out infinite" }} />
+              <div style={{ width: 54, height: 54, borderRadius: 14, background: "linear-gradient(135deg, #0057a8, #0891b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, boxShadow: "0 0 24px rgba(0,180,255,0.4)" }}>⚕️</div>
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(0,180,255,0.6)", textTransform: "uppercase", fontFamily: "'Space Mono', monospace", marginBottom: 2 }}>Clinical Research Intelligence</div>
+              <div style={{ fontSize: 38, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.02em" }}>
+                Pharma<span style={{ color: "#00b4ff", textShadow: "0 0 20px rgba(0,180,255,0.5)" }}>Lens</span>
+              </div>
             </div>
           </div>
-          <p style={{ color: T.muted, fontSize: 15, lineHeight: 1.7, maxWidth: 420, margin: "0 auto" }}>
-            Upload clinical trial data, patient outcomes, or research datasets. Get instant AI-powered insights, statistical analysis, and exportable reports.
+
+          <p style={{ color: "rgba(150,200,255,0.65)", fontSize: 14, lineHeight: 1.75, maxWidth: 440, margin: "0 auto", fontFamily: "'Syne', sans-serif", fontWeight: 400 }}>
+            Drop any clinical dataset. Get <span style={{ color: "rgba(0,180,255,0.9)" }}>AI-generated insights</span>, statistical analysis, and a board-ready PDF report — in under 60 seconds.
           </p>
         </div>
 
-        {/* Drop Zone */}
-        <div className="dropzone" onClick={() => fileRef.current.click()}
-          onDragOver={e => { e.preventDefault(); setDrag(true); }}
-          onDragLeave={() => setDrag(false)}
-          onDrop={onDrop}
-          style={{
-            border: `2px dashed ${drag ? T.primary : T.borderStrong}`,
-            borderRadius: 20, padding: "52px 32px", textAlign: "center",
-            background: drag ? T.primaryLight : T.white, cursor: "pointer",
-            transition: "all 0.2s", boxShadow: "0 4px 24px rgba(0,87,168,0.08)",
-          }}
-        >
-          <div style={{ fontSize: 48, marginBottom: 14 }}>🧬</div>
-          <div style={{ fontWeight: 600, fontSize: 18, color: T.text, marginBottom: 6 }}>Drop your dataset here</div>
-          <div style={{ color: T.muted, fontSize: 13, marginBottom: 24 }}>Clinical trial data, patient records, research CSVs</div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-            {[".xlsx", ".xls", ".csv"].map(t => (
-              <span key={t} style={{ background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 99, padding: "4px 12px", fontSize: 12, fontFamily: "'IBM Plex Mono', monospace" }}>{t}</span>
-            ))}
-          </div>
-        </div>
-        <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={e => processFile(e.target.files[0])} />
+        {/* Drop zone */}
+        <div className="upload-card-delay1">
+          <div className={`drop-zone${drag ? " drop-zone-active" : ""}`}
+            onClick={() => fileRef.current.click()}
+            onDragOver={e => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={onDrop}
+          >
+            {/* Corner brackets */}
+            <div className="corner-tl" /><div className="corner-tr" />
+            <div className="corner-bl" /><div className="corner-br" />
 
-        {error && <div style={{ marginTop: 14, color: T.rose, fontSize: 13, textAlign: "center" }}>⚠ {error}</div>}
+            {/* DNA icon */}
+            <div style={{ fontSize: 52, marginBottom: 16, filter: "drop-shadow(0 0 16px rgba(0,180,255,0.5))" }}>🧬</div>
+            <div style={{ fontWeight: 700, fontSize: 20, color: "#ffffff", marginBottom: 8, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.01em" }}>
+              {drag ? "Release to analyze" : "Drop your dataset here"}
+            </div>
+            <div style={{ color: "rgba(150,200,255,0.5)", fontSize: 13, marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>
+              Clinical trial data · patient records · research CSVs
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+              {[".xlsx", ".xls", ".csv"].map(t => <span key={t} className="ext-tag">{t}</span>)}
+            </div>
+          </div>
+          <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={e => processFile(e.target.files[0])} />
+        </div>
+
+        {error && <div style={{ marginTop: 14, color: "#ef4444", fontSize: 13, textAlign: "center", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
 
         {/* Feature pills */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 36, flexWrap: "wrap" }}>
-          {[["🔬", "AI Clinical Insights"], ["📊", "Auto Visualizations"], ["📋", "Statistical Tables"], ["📄", "PDF Report Export"]].map(([icon, label]) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted }}>
-              <span>{icon}</span><span>{label}</span>
-            </div>
+        <div className="upload-card-delay2" style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
+          {[["🔬", "AI Insights"], ["📊", "Visualizations"], ["📋", "Stats Tables"], ["📄", "PDF Export"]].map(([icon, label]) => (
+            <div key={label} className="feature-pill"><span>{icon}</span><span>{label}</span></div>
           ))}
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 28, fontSize: 11, color: T.faint, fontFamily: "'IBM Plex Mono', monospace" }}>
-          Data stays in your browser · No upload to servers · HIPAA-aware design
+        {/* Privacy note + built by */}
+        <div className="upload-card-delay3" style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <div style={{ fontSize: 10, color: "rgba(100,160,200,0.45)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.08em", textAlign: "center" }}>
+            DATA STAYS IN YOUR BROWSER · NO SERVER UPLOAD · HIPAA-AWARE
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(100,160,200,0.4)", fontFamily: "'Space Mono', monospace" }}>
+            Built by{" "}
+            <a href="https://rezoansultan.com" target="_blank" rel="noopener noreferrer"
+              style={{ color: "#00b4ff", textDecoration: "none", borderBottom: "1px solid rgba(0,180,255,0.3)", paddingBottom: 1 }}>
+              Rezoan Sultan
+            </a>
+          </div>
         </div>
       </div>
     </div>
