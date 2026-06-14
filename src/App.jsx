@@ -735,16 +735,7 @@ export default function PharmaLens() {
                   ))}
                 </div>
               </div>
-              <div style={{ flex: 1, minWidth: 180, borderLeft: `1px solid ${T.border}`, paddingLeft: 24 }}>
-                <div style={{ fontSize: 11, color: T.faint, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Powered By</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {[["🤖 AI Engine", "Claude (Anthropic)"], ["📊 Charts", "Recharts"], ["🔒 Data Privacy", "Browser-local"], ["🏢 Platform", "Rebiconn"]].map(([icon, val]) => (
-                    <div key={icon} style={{ fontSize: 11, color: T.muted, display: "flex", gap: 6 }}>
-                      <span>{icon}</span><span>{val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
             </div>
 
             {/* AI Insights */}
