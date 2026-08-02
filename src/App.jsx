@@ -608,12 +608,15 @@ export default function PharmaLens() {
           pointer-events: none; z-index: 1;
         }
         @media (max-width: 480px) {
-          .pharma-title { font-size: 44px !important; }
-          .pharma-eyebrow { font-size: 8px !important; letter-spacing: 0.12em !important; }
+          .pharma-title { font-size: 36px !important; letter-spacing: 0 !important; }
+          .pharma-eyebrow { font-size: 8px !important; letter-spacing: 0.1em !important; }
           .drop-zone { padding: 28px 18px !important; }
-          .drop-zone-dna { font-size: 40px !important; }
-          .drop-zone-title { font-size: 17px !important; }
-          .privacy-text { font-size: 8px !important; letter-spacing: 0.04em !important; }
+          .drop-zone-dna { font-size: 38px !important; }
+          .drop-zone-title { font-size: 16px !important; }
+          .privacy-text { font-size: 8px !important; letter-spacing: 0.03em !important; }
+        }
+        @media (max-width: 360px) {
+          .pharma-title { font-size: 30px !important; }
         }
       `}</style>
 
@@ -650,7 +653,7 @@ export default function PharmaLens() {
           </div>
 
           {/* Title — full width, centered, never clips */}
-          <div className="pharma-title" style={{ fontSize: 52, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.02em", marginBottom: 16 }}>
+          <div className="pharma-title" style={{ fontSize: 44, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.01em", marginBottom: 16, wordBreak: "keep-all", overflow: "visible" }}>
             Pharma<span style={{ color: "#00b4ff", textShadow: "0 0 20px rgba(0,180,255,0.5)" }}>Lens</span>
           </div>
 
