@@ -523,12 +523,10 @@ export default function PharmaLens() {
 
   // ── UPLOAD ────────────────────────────────────────────────────────────────
   if (stage === "upload") return (
-    <div style={{ minHeight: "100vh", background: "#020b18", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Syne', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#020b18", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Syne', sans-serif", padding: "24px 0" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        /* Animated gradient orbs */
         @keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
         @keyframes orb2 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-30px,40px) scale(0.95);} }
         @keyframes orb3 { 0%,100%{transform:translate(0,0);} 33%{transform:translate(20px,20px);} 66%{transform:translate(-20px,-10px);} }
@@ -546,7 +544,7 @@ export default function PharmaLens() {
         .drop-zone {
           border: 1.5px solid rgba(0,180,255,0.25);
           border-radius: 20px;
-          padding: 52px 32px;
+          padding: 36px 24px;
           text-align: center;
           background: rgba(0,180,255,0.03);
           cursor: pointer;
@@ -556,27 +554,30 @@ export default function PharmaLens() {
         }
         .drop-zone::before {
           content: '';
-          position: absolute;
-          inset: 0;
+          position: absolute; inset: 0;
           background: linear-gradient(135deg, rgba(0,180,255,0.05) 0%, transparent 60%);
           pointer-events: none;
         }
-        .drop-zone:hover {
+        .drop-zone:hover, .drop-zone:active {
           border-color: rgba(0,180,255,0.6) !important;
           background: rgba(0,180,255,0.07) !important;
           box-shadow: 0 0 40px rgba(0,180,255,0.12), inset 0 0 40px rgba(0,180,255,0.04);
         }
+        .pills-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
         .feature-pill {
-          display: flex; align-items: center; gap: 8px;
-          padding: 8px 16px;
+          display: flex; align-items: center; justify-content: center; gap: 7px;
+          padding: 10px 12px;
           border: 1px solid rgba(0,180,255,0.15);
-          border-radius: 99px;
+          border-radius: 10px;
           font-size: 11px;
-          color: rgba(150,200,255,0.7);
+          color: rgba(150,200,255,0.75);
           font-family: 'Space Mono', monospace;
           background: rgba(0,180,255,0.04);
           transition: all 0.2s;
-          white-space: nowrap;
         }
         .feature-pill:hover {
           border-color: rgba(0,180,255,0.4);
@@ -588,8 +589,8 @@ export default function PharmaLens() {
           color: #00b4ff;
           border: 1px solid rgba(0,180,255,0.25);
           border-radius: 6px;
-          padding: 4px 12px;
-          font-size: 11px;
+          padding: 5px 14px;
+          font-size: 12px;
           font-family: 'Space Mono', monospace;
           letter-spacing: 0.05em;
         }
@@ -601,74 +602,78 @@ export default function PharmaLens() {
         .corner-bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid #00b4ff; border-left: 1.5px solid #00b4ff; border-radius: 0 0 0 3px; }
         .corner-br { bottom: 12px; right: 12px; border-bottom: 1.5px solid #00b4ff; border-right: 1.5px solid #00b4ff; border-radius: 0 0 3px 0; }
         .scanline {
-          position: absolute; left: 0; right: 0; height: 2px;
+          position: fixed; left: 0; right: 0; height: 2px;
           background: linear-gradient(90deg, transparent, rgba(0,180,255,0.4), transparent);
           animation: scanline 3.5s linear infinite;
-          pointer-events: none;
+          pointer-events: none; z-index: 1;
+        }
+        @media (max-width: 480px) {
+          .pharma-title { font-size: 44px !important; }
+          .pharma-eyebrow { font-size: 8px !important; letter-spacing: 0.12em !important; }
+          .drop-zone { padding: 28px 18px !important; }
+          .drop-zone-dna { font-size: 40px !important; }
+          .drop-zone-title { font-size: 17px !important; }
+          .privacy-text { font-size: 8px !important; letter-spacing: 0.04em !important; }
         }
       `}</style>
 
-      {/* ── Deep space background ── */}
-      {/* Animated grid */}
+      {/* Background */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(0,180,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,180,255,0.06) 1px, transparent 1px)", backgroundSize: "48px 48px", animation: "grid-drift 8s linear infinite", pointerEvents: "none" }} />
-
-      {/* Glow orbs */}
       <div style={{ position: "fixed", top: "15%", left: "10%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,87,168,0.18) 0%, transparent 70%)", animation: "orb1 8s ease-in-out infinite", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: "10%", right: "8%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,140,200,0.12) 0%, transparent 70%)", animation: "orb2 10s ease-in-out infinite", pointerEvents: "none" }} />
       <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,60,120,0.1) 0%, transparent 70%)", animation: "orb3 12s ease-in-out infinite", pointerEvents: "none" }} />
-
-      {/* Scanline effect */}
       <div className="scanline" />
 
       {/* ── Content ── */}
-      <div style={{ position: "relative", maxWidth: 620, width: "92%", zIndex: 2 }}>
+      <div style={{ position: "relative", maxWidth: 480, width: "100%", padding: "0 20px", zIndex: 2 }}>
 
-        {/* Logo + badge */}
-        <div className="upload-card" style={{ textAlign: "center", marginBottom: 44 }}>
+        {/* Header */}
+        <div className="upload-card" style={{ textAlign: "center", marginBottom: 28 }}>
+
           {/* Status badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 28, background: "rgba(0,180,255,0.07)", border: "1px solid rgba(0,180,255,0.2)", borderRadius: 99, padding: "5px 14px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 22, background: "rgba(0,180,255,0.07)", border: "1px solid rgba(0,180,255,0.2)", borderRadius: 99, padding: "5px 14px" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00e676", boxShadow: "0 0 8px #00e676", display: "inline-block", animation: "glow-flicker 2s ease-in-out infinite" }} />
             <span style={{ fontSize: 10, color: "rgba(150,220,255,0.8)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.15em", textTransform: "uppercase" }}>AI System Online</span>
           </div>
 
-          {/* Brand */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 20 }}>
-            {/* Icon with pulse ring */}
-            <div style={{ position: "relative", width: 54, height: 54 }}>
+          {/* Icon — stacked above title on mobile */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <div style={{ position: "relative", width: 52, height: 52 }}>
               <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(0,180,255,0.4)", animation: "pulse-ring 2s ease-out infinite" }} />
-              <div style={{ width: 54, height: 54, borderRadius: 14, background: "linear-gradient(135deg, #0057a8, #0891b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, boxShadow: "0 0 24px rgba(0,180,255,0.4)" }}>⚕️</div>
-            </div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(0,180,255,0.6)", textTransform: "uppercase", fontFamily: "'Space Mono', monospace", marginBottom: 2 }}>Clinical Research Intelligence</div>
-              <div style={{ fontSize: 38, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.02em" }}>
-                Pharma<span style={{ color: "#00b4ff", textShadow: "0 0 20px rgba(0,180,255,0.5)" }}>Lens</span>
-              </div>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: "linear-gradient(135deg, #0057a8, #0891b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, boxShadow: "0 0 24px rgba(0,180,255,0.4)" }}>⚕️</div>
             </div>
           </div>
 
-          <p style={{ color: "rgba(150,200,255,0.65)", fontSize: 14, lineHeight: 1.75, maxWidth: 440, margin: "0 auto", fontFamily: "'Syne', sans-serif", fontWeight: 400 }}>
-            Drop any clinical dataset. Get <span style={{ color: "rgba(0,180,255,0.9)" }}>AI-generated insights</span>, statistical analysis, and a board-ready PDF report — in under 60 seconds.
+          {/* Eyebrow */}
+          <div className="pharma-eyebrow" style={{ fontSize: 9, letterSpacing: "0.22em", color: "rgba(0,180,255,0.6)", textTransform: "uppercase", fontFamily: "'Space Mono', monospace", marginBottom: 6 }}>
+            Clinical Research Intelligence
+          </div>
+
+          {/* Title — full width, centered, never clips */}
+          <div className="pharma-title" style={{ fontSize: 52, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.02em", marginBottom: 16 }}>
+            Pharma<span style={{ color: "#00b4ff", textShadow: "0 0 20px rgba(0,180,255,0.5)" }}>Lens</span>
+          </div>
+
+          <p style={{ color: "rgba(150,200,255,0.65)", fontSize: 14, lineHeight: 1.75, fontFamily: "'Syne', sans-serif", fontWeight: 400, padding: "0 4px" }}>
+            Drop any clinical dataset. Get <span style={{ color: "rgba(0,180,255,0.9)" }}>AI-generated insights</span>, statistical analysis, and a board-ready PDF — in under 60 seconds.
           </p>
         </div>
 
         {/* Drop zone */}
         <div className="upload-card-delay1">
-          <div className={`drop-zone${drag ? " drop-zone-active" : ""}`}
+          <div className="drop-zone"
             onClick={() => fileRef.current.click()}
             onDragOver={e => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
             onDrop={onDrop}
           >
-            {/* Corner brackets */}
             <div className="corner-tl" /><div className="corner-tr" />
             <div className="corner-bl" /><div className="corner-br" />
-
-            {/* DNA icon */}
-            <div style={{ fontSize: 52, marginBottom: 16, filter: "drop-shadow(0 0 16px rgba(0,180,255,0.5))" }}>🧬</div>
-            <div style={{ fontWeight: 700, fontSize: 20, color: "#ffffff", marginBottom: 8, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.01em" }}>
-              {drag ? "Release to analyze" : "Drop your dataset here"}
+            <div className="drop-zone-dna" style={{ fontSize: 48, marginBottom: 14, filter: "drop-shadow(0 0 16px rgba(0,180,255,0.5))" }}>🧬</div>
+            <div className="drop-zone-title" style={{ fontWeight: 700, fontSize: 19, color: "#ffffff", marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
+              {drag ? "Release to analyze" : "Tap to upload or drop file"}
             </div>
-            <div style={{ color: "rgba(150,200,255,0.5)", fontSize: 13, marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>
+            <div style={{ color: "rgba(150,200,255,0.5)", fontSize: 12, marginBottom: 20, fontFamily: "'Syne', sans-serif" }}>
               Clinical trial data · patient records · research CSVs
             </div>
             <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
@@ -678,18 +683,18 @@ export default function PharmaLens() {
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={e => processFile(e.target.files[0])} />
         </div>
 
-        {error && <div style={{ marginTop: 14, color: "#ef4444", fontSize: 13, textAlign: "center", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+        {error && <div style={{ marginTop: 12, color: "#ef4444", fontSize: 12, textAlign: "center", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
 
-        {/* Feature pills */}
-        <div className="upload-card-delay2" style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
+        {/* Feature pills — 2x2 grid on mobile */}
+        <div className="upload-card-delay2 pills-grid" style={{ marginTop: 20 }}>
           {[["🔬", "AI Insights"], ["📊", "Visualizations"], ["📋", "Stats Tables"], ["📄", "PDF Export"]].map(([icon, label]) => (
             <div key={label} className="feature-pill"><span>{icon}</span><span>{label}</span></div>
           ))}
         </div>
 
-        {/* Privacy note + built by */}
-        <div className="upload-card-delay3" style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 10, color: "rgba(100,160,200,0.45)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.08em", textAlign: "center" }}>
+        {/* Footer */}
+        <div className="upload-card-delay3" style={{ marginTop: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div className="privacy-text" style={{ fontSize: 9, color: "rgba(100,160,200,0.4)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.07em", textAlign: "center", lineHeight: 1.7 }}>
             DATA STAYS IN YOUR BROWSER · NO SERVER UPLOAD · HIPAA-AWARE
           </div>
           <div style={{ fontSize: 11, color: "rgba(100,160,200,0.4)", fontFamily: "'Space Mono', monospace" }}>
