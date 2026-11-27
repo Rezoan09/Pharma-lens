@@ -575,7 +575,7 @@ export default function PharmaLens() {
       <div style={{ position: "relative", maxWidth: 520, width: "100%", padding: "0 20px", zIndex: 2 }}>
 
         <div className="upload-card" style={{ textAlign: "center", marginBottom: 28 }}>
-          <a href="/landing.html" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 22 }}>
+          <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 22 }}>
             <span style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#14b8a6,#22d3ee)", display: "grid", placeItems: "center", color: "#071a2f", fontSize: 18 }}>◎</span>
             <span style={{ fontWeight: 800, fontSize: 22, color: "#fff" }}>PharmaLens</span>
           </a>
