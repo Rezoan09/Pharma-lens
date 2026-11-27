@@ -9,30 +9,30 @@ import {
 
 // ── Design Tokens ─────────────────────────────────────────────────────────────
 const T = {
-  bg: "#f7f8fc",
+  bg: "#f6f9fc",
   white: "#ffffff",
-  surface: "#f0f2f8",
-  border: "#e2e6f0",
-  borderStrong: "#c8d0e4",
-  text: "#0f1729",
-  muted: "#6b7a99",
-  faint: "#a0aec0",
-  // Clinical blue-teal primary
-  primary: "#0057a8",
-  primaryLight: "#e8f0fb",
-  primaryMid: "#3b82f6",
-  // Accent: teal for positive, amber for warning, rose for critical
-  teal: "#0891b2",
-  tealLight: "#e0f7fa",
+  surface: "#eef3f8",
+  border: "#e3e9f0",
+  borderStrong: "#c9d4e0",
+  text: "#0f172a",
+  muted: "#5b6b7f",
+  faint: "#94a3b8",
+  navy: "#071a2f",
+  navy2: "#0b2545",
+  primary: "#0e7490",
+  primaryLight: "#e6f7fa",
+  primaryMid: "#22d3ee",
+  teal: "#14b8a6",
+  tealLight: "#d9faf5",
   green: "#059669",
   greenLight: "#d1fae5",
   amber: "#d97706",
   amberLight: "#fef3c7",
   rose: "#e11d48",
   roseLight: "#ffe4e6",
-  violet: "#7c3aed",
-  violetLight: "#ede9fe",
-  chartColors: ["#0057a8","#0891b2","#059669","#7c3aed","#d97706","#e11d48","#0284c7","#65a30d"],
+  violet: "#6366f1",
+  violetLight: "#e0e7ff",
+  chartColors: ["#0e7490","#14b8a6","#22d3ee","#0b2545","#f59e0b","#e11d48","#6366f1","#65a30d"],
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ function fmt(n, decimals = 2) {
 // ── PDF Export — Screenshot-based full 4-tab report ──────────────────────────
 function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const chartColors = ["#0057a8","#0891b2","#059669","#7c3aed","#d97706","#e11d48","#0284c7","#65a30d"];
+  const chartColors = ["#0e7490","#0891b2","#059669","#7c3aed","#d97706","#e11d48","#0284c7","#65a30d"];
 
   // ── SVG: Horizontal Bar Chart (Mean Values) ──────────────────────────────
   const barData = numStats.slice(0, 12);
@@ -135,7 +135,7 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
     const cSvgH = sorted.length * cRowH + 28;
     return `
     <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;flex:1;min-width:260px;">
-      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${col}</div>
+      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">${col}</div>
       <svg width="100%" viewBox="0 0 ${cW} ${cSvgH}" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="10">
         ${sorted.map(([name, count], i) => {
           const y = i * cRowH + 4;
@@ -164,11 +164,11 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
     const meanPct = ((s.stats.mean - s.stats.min) / range) * 100;
     return `
     <div style="border:1px solid #e2e6f0;border-radius:10px;padding:14px;border-top:3px solid ${c};">
-      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">${s.key}</div>
+      <div style="font-size:11px;font-weight:700;color:#0f1729;margin-bottom:10px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">${s.key}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
         ${[["Mean",fmt(s.stats.mean)],["Median",fmt(s.stats.median)],["Min",fmt(s.stats.min)],["Max",fmt(s.stats.max)],["Std Dev",fmt(s.stats.std)],["Outliers",s.stats.outliers > 0 ? "⚠ "+s.stats.outliers : "✓ 0"]].map(([l, v]) => `
         <div style="background:#f7f8fc;border-radius:6px;padding:6px 8px;">
-          <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;letter-spacing:0.05em;font-family:'IBM Plex Mono',monospace;">${l}</div>
+          <div style="font-size:9px;color:#a0aec0;text-transform:uppercase;letter-spacing:0.05em;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">${l}</div>
           <div style="font-size:14px;font-weight:700;color:${c};">${v}</div>
         </div>`).join("")}
       </div>
@@ -177,7 +177,7 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
         <rect x="${q1Pct * 3}" y="4" width="${Math.max(2,(q3Pct-q1Pct)*3)}" height="12" fill="${c}44" rx="2"/>
         <rect x="${meanPct * 3 - 2}" y="2" width="4" height="16" fill="${c}" rx="2"/>
       </svg>
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;margin-top:2px;">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:#a0aec0;font-family:'Amasis MT Pro', Bitter, Georgia, serif;margin-top:2px;">
         <span>${fmt(s.stats.min)}</span><span>${fmt(s.stats.max)}</span>
       </div>
     </div>`;
@@ -187,8 +187,8 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   const tableCols = cols.slice(0, 10);
   const tableRows = rows.slice(0, 50).map((row, ri) => `
     <tr style="background:${ri % 2 === 0 ? "#fff" : "#f7f8fc"}">
-      <td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">${ri+1}</td>
-      ${tableCols.map(c => `<td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;font-family:'IBM Plex Mono',monospace;color:${numCols.includes(c)?"#0057a8":"#0f1729"};white-space:nowrap;">${String(row[c] ?? "")}</td>`).join("")}
+      <td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;color:#a0aec0;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">${ri+1}</td>
+      ${tableCols.map(c => `<td style="padding:5px 8px;border-bottom:1px solid #f0f2f8;font-size:10px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;color:${numCols.includes(c)?"#0e7490":"#0f1729"};white-space:nowrap;">${String(row[c] ?? "")}</td>`).join("")}
     </tr>`).join("");
 
   const insightRows = insights.map((ins, i) => `
@@ -199,13 +199,13 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
 
   const statRows = numStats.map(s => `
     <tr>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;">${s.key}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.mean)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.median)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.min)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.max)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;">${fmt(s.stats.std)}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:${s.stats.outliers>0?"#e11d48":"#059669"};font-weight:${s.stats.outliers>0?"700":"400"};">${s.stats.outliers>0?"⚠ "+s.stats.outliers:"✓ 0"}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;font-weight:600;">${s.key}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;">${fmt(s.stats.mean)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;">${fmt(s.stats.median)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;">${fmt(s.stats.min)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;">${fmt(s.stats.max)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;">${fmt(s.stats.std)}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f2f8;text-align:right;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-size:10px;color:${s.stats.outliers>0?"#e11d48":"#059669"};font-weight:${s.stats.outliers>0?"700":"400"};">${s.stats.outliers>0?"⚠ "+s.stats.outliers:"✓ 0"}</td>
     </tr>`).join("");
 
   const w = window.open("", "_blank");
@@ -214,11 +214,11 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Source Serif 4',Georgia,serif;color:#0f1729;background:#fff;}
+    body{font-family:'Amasis MT Pro', Bitter, Georgia, serif;color:#0f1729;background:#fff;}
     .page{padding:36px 44px;max-width:960px;margin:0 auto;}
-    h2{font-size:13px;font-weight:700;color:#0057a8;margin:0 0 16px;padding:8px 14px;background:#e8f0fb;border-radius:8px;border-left:4px solid #0057a8;}
+    h2{font-size:13px;font-weight:700;color:#0e7490;margin:0 0 16px;padding:8px 14px;background:#e8f0fb;border-radius:8px;border-left:4px solid #0e7490;}
     table{width:100%;border-collapse:collapse;}
-    thead th{background:#0057a8;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+    thead th{background:#0e7490;color:#fff;padding:7px 8px;text-align:left;font-size:10px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;font-weight:500;}
     .section{page-break-before:always;padding-top:28px;}
     .flex-row{display:flex;gap:14px;flex-wrap:wrap;}
     @media print{
@@ -229,23 +229,23 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   </style></head><body><div class="page">
 
   <!-- HEADER -->
-  <div style="border-bottom:3px solid #0057a8;padding-bottom:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
+  <div style="border-bottom:3px solid #0e7490;padding-bottom:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;">
     <div>
-      <div style="font-size:10px;letter-spacing:0.18em;color:#6b7a99;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;">⚕ PharmaLens · Clinical Research Intelligence Report</div>
-      <div style="font-size:22px;font-weight:700;color:#0057a8;">${fileName.replace(/\.[^.]+$/, "")}</div>
-      <div style="color:#6b7a99;font-size:11px;margin-top:5px;">Generated on ${date} · by Rebiconn · Powered by Claude AI</div>
+      <div style="font-size:10px;letter-spacing:0.18em;color:#6b7a99;text-transform:uppercase;margin-bottom:6px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">⚕ PharmaLens · Clinical Research Intelligence Report</div>
+      <div style="font-size:22px;font-weight:700;color:#0e7490;">${fileName.replace(/\.[^.]+$/, "")}</div>
+      <div style="color:#6b7a99;font-size:11px;margin-top:5px;">Generated on ${date} · Developed by Rezoan Sultan</div>
     </div>
     <div style="text-align:right;">
-      <div style="font-size:32px;font-weight:700;color:#0057a8;">${rows.length.toLocaleString()}</div>
+      <div style="font-size:32px;font-weight:700;color:#0e7490;">${rows.length.toLocaleString()}</div>
       <div style="font-size:10px;color:#6b7a99;">Total Records</div>
     </div>
   </div>
 
   <!-- KPI CARDS -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
-    ${[["📋 Records",rows.length.toLocaleString(),"#0057a8"],["📐 Variables",cols.length,"#0891b2"],["🔢 Numeric",numStats.length,"#059669"],["🏷️ Categorical",(cols.length-numStats.length),"#7c3aed"]].map(([l,v,c])=>`
+    ${[["📋 Records",rows.length.toLocaleString(),"#0e7490"],["📐 Variables",cols.length,"#0891b2"],["🔢 Numeric",numStats.length,"#059669"],["🏷️ Categorical",(cols.length-numStats.length),"#7c3aed"]].map(([l,v,c])=>`
     <div style="border:1px solid #e2e6f0;border-radius:10px;padding:12px;border-top:3px solid ${c};text-align:center;">
-      <div style="font-size:9px;color:#6b7a99;margin-bottom:3px;font-family:'IBM Plex Mono',monospace;">${l}</div>
+      <div style="font-size:9px;color:#6b7a99;margin-bottom:3px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">${l}</div>
       <div style="font-size:22px;font-weight:700;color:${c};">${v}</div>
     </div>`).join("")}
   </div>
@@ -294,9 +294,9 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
   <!-- SECTION 4: DATA TABLE -->
   <div class="section">
     <h2>🗃 Section 4 — Data Table</h2>
-    <div style="font-size:11px;color:#6b7a99;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;">
+    <div style="font-size:11px;color:#6b7a99;margin-bottom:10px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">
       First 50 of ${rows.length.toLocaleString()} records · ${cols.length > 10 ? "First 10 columns" : cols.length+" columns"} ·
-      <span style="color:#0057a8">●</span> Numeric &nbsp;<span style="color:#d97706">●</span> Categorical
+      <span style="color:#0e7490">●</span> Numeric &nbsp;<span style="color:#d97706">●</span> Categorical
     </div>
     <div style="overflow-x:auto;">
     <table>
@@ -307,18 +307,18 @@ function exportPDF(fileName, rows, cols, numCols, catCols, numStats, insights) {
       <tbody>${tableRows}</tbody>
     </table>
     </div>
-    ${rows.length > 50 ? `<div style="margin-top:8px;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">… and ${(rows.length-50).toLocaleString()} more records not shown.</div>` : ""}
+    ${rows.length > 50 ? `<div style="margin-top:8px;font-size:10px;color:#a0aec0;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">… and ${(rows.length-50).toLocaleString()} more records not shown.</div>` : ""}
   </div>
 
   <!-- FOOTER -->
-  <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e2e6f0;display:flex;justify-content:space-between;font-size:10px;color:#a0aec0;font-family:'IBM Plex Mono',monospace;">
-    <span>PharmaLens Clinical Intelligence · by Rebiconn · Confidential</span>
+  <div style="margin-top:40px;padding-top:14px;border-top:1px solid #e2e6f0;display:flex;justify-content:space-between;font-size:10px;color:#a0aec0;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">
+    <span>PharmaLens Clinical Intelligence · Developed by Rezoan Sultan · Confidential</span>
     <span>${date}</span>
   </div>
 
   <div style="text-align:center;margin-top:20px;" class="no-print">
-    <button onclick="window.print()" style="background:#0057a8;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">🖨 Print / Save as PDF</button>
-    <p style="font-size:10px;color:#a0aec0;margin-top:6px;font-family:'IBM Plex Mono',monospace;">Set page margins to None for best results</p>
+    <button onclick="window.print()" style="background:#0e7490;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">🖨 Print / Save as PDF</button>
+    <p style="font-size:10px;color:#a0aec0;margin-top:6px;font-family:'Amasis MT Pro', Bitter, Georgia, serif;">Set page margins to None for best results</p>
   </div>
 
   </div></body></html>`);
@@ -330,9 +330,9 @@ const ClinicalTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 14px", boxShadow: "0 4px 20px rgba(0,87,168,0.12)", fontSize: 12 }}>
-      {label && <div style={{ color: T.muted, marginBottom: 4, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11 }}>{label}</div>}
+      {label && <div style={{ color: T.muted, marginBottom: 4, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontSize: 11 }}>{label}</div>}
       {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || T.primary, fontFamily: "'IBM Plex Mono', monospace" }}>
+        <div key={i} style={{ color: p.color || T.primary, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>
           {p.name}: <strong>{fmt(p.value)}</strong>
         </div>
       ))}
@@ -352,14 +352,14 @@ const KPICard = ({ label, value, sub, color = T.primary, icon, trend }) => (
   >
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
       <div>
-        <div style={{ fontSize: 12, color: T.muted, marginBottom: 6, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.03em", textTransform: "uppercase" }}>{label}</div>
-        <div style={{ fontSize: 30, fontWeight: 700, color: T.text, fontFamily: "'Source Serif 4', serif", lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: 12, color: T.muted, marginBottom: 6, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", letterSpacing: "0.03em", textTransform: "uppercase" }}>{label}</div>
+        <div style={{ fontSize: 30, fontWeight: 700, color: T.text, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", lineHeight: 1 }}>{value}</div>
         {sub && <div style={{ fontSize: 11, color: T.faint, marginTop: 6 }}>{sub}</div>}
       </div>
       <div style={{ width: 42, height: 42, borderRadius: 10, background: color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{icon}</div>
     </div>
     {trend && (
-      <div style={{ marginTop: 10, fontSize: 11, color: trend > 0 ? T.green : T.rose, fontFamily: "'IBM Plex Mono', monospace" }}>
+      <div style={{ marginTop: 10, fontSize: 11, color: trend > 0 ? T.green : T.rose, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>
         {trend > 0 ? "▲" : "▼"} {Math.abs(trend)}% vs baseline
       </div>
     )}
@@ -374,10 +374,10 @@ const Panel = ({ title, subtitle, badge, children, fullWidth }) => (
   }}>
     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: subtitle || badge ? 14 : 16 }}>
       <div>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.text, fontFamily: "'Source Serif 4', serif", marginBottom: 2 }}>{title}</div>
+        <div style={{ fontWeight: 700, fontSize: 14, color: T.text, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", marginBottom: 2 }}>{title}</div>
         {subtitle && <div style={{ fontSize: 12, color: T.muted }}>{subtitle}</div>}
       </div>
-      {badge && <span style={{ background: T.primaryLight, color: T.primary, borderRadius: 99, padding: "3px 10px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500 }}>{badge}</span>}
+      {badge && <span style={{ background: T.primaryLight, color: T.primary, borderRadius: 99, padding: "3px 10px", fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontWeight: 500 }}>{badge}</span>}
     </div>
     {children}
   </div>
@@ -390,7 +390,7 @@ const InsightPill = ({ text, index }) => {
   const bg = bgs[index % bgs.length];
   return (
     <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 16px", background: bg, border: `1px solid ${c}30`, borderRadius: 10 }}>
-      <div style={{ width: 24, height: 24, borderRadius: 6, background: c, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, fontFamily: "'IBM Plex Mono', monospace" }}>{index + 1}</div>
+      <div style={{ width: 24, height: 24, borderRadius: 6, background: c, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{index + 1}</div>
       <div style={{ fontSize: 13, color: T.text, lineHeight: 1.65 }}>{text}</div>
     </div>
   );
@@ -415,21 +415,18 @@ async function getInsights(totalRows, numStats, catCols, colNames) {
     allColumns: colNames,
   };
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("/api/insights", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
       system: `You are a clinical data analyst specializing in pharmaceutical research. Given dataset statistics, return ONLY a valid JSON array of exactly 6 insight strings. No markdown, no backticks, no preamble. Each insight should be 1-2 sentences, clinically relevant, specific to the numbers, and actionable. Mention actual column names and values where possible. Format exactly: ["insight1","insight2","insight3","insight4","insight5","insight6"]`,
       messages: [{ role: "user", content: `Analyze this clinical dataset and provide 6 key insights:\n${JSON.stringify(summary, null, 2)}` }],
     }),
   });
+  if (res.status === 429) {
+    const e = await res.json().catch(() => ({}));
+    return [e.error || "Usage limit reached. Please try again later.", "Charts, statistics and the data table are still available below."];
+  }
   const data = await res.json();
   const raw = data.content?.find(b => b.type === "text")?.text || "[]";
   try { return JSON.parse(raw.replace(/```json|```/g, "").trim()); }
@@ -517,152 +514,85 @@ export default function PharmaLens() {
   );
 
   const commonStyle = {
-    fontFamily: "'Source Serif 4', Georgia, serif",
+    fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif",
     background: T.bg, minHeight: "100vh", color: T.text,
   };
 
   // ── UPLOAD ────────────────────────────────────────────────────────────────
   if (stage === "upload") return (
-    <div style={{ minHeight: "100vh", background: "#020b18", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Syne', sans-serif", padding: "24px 0" }}>
+    <div style={{ minHeight: "100vh", background: "radial-gradient(900px 500px at 85% -10%, rgba(34,211,238,.18), transparent 60%), radial-gradient(700px 400px at 0% 100%, rgba(20,184,166,.16), transparent 60%), #071a2f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", padding: "32px 0" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        @keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
-        @keyframes orb2 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-30px,40px) scale(0.95);} }
-        @keyframes orb3 { 0%,100%{transform:translate(0,0);} 33%{transform:translate(20px,20px);} 66%{transform:translate(-20px,-10px);} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-        @keyframes scanline { 0%{top:-10%;} 100%{top:110%;} }
-        @keyframes pulse-ring { 0%{transform:scale(0.95);opacity:1;} 100%{transform:scale(1.6);opacity:0;} }
-        @keyframes glow-flicker { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
-        @keyframes grid-drift { from{background-position:0 0;} to{background-position:40px 40px;} }
-
         .upload-card { animation: fadeUp 0.7s ease forwards; }
         .upload-card-delay1 { animation: fadeUp 0.7s 0.1s ease both; }
         .upload-card-delay2 { animation: fadeUp 0.7s 0.2s ease both; }
         .upload-card-delay3 { animation: fadeUp 0.7s 0.35s ease both; }
-
         .drop-zone {
-          border: 1.5px solid rgba(0,180,255,0.25);
+          border: 1.5px dashed rgba(34,211,238,0.4);
           border-radius: 20px;
           padding: 36px 24px;
           text-align: center;
-          background: rgba(0,180,255,0.03);
+          background: rgba(255,255,255,0.04);
           cursor: pointer;
-          transition: all 0.3s;
-          position: relative;
-          overflow: hidden;
-        }
-        .drop-zone::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(0,180,255,0.05) 0%, transparent 60%);
-          pointer-events: none;
+          transition: all 0.25s;
         }
         .drop-zone:hover, .drop-zone:active {
-          border-color: rgba(0,180,255,0.6) !important;
-          background: rgba(0,180,255,0.07) !important;
-          box-shadow: 0 0 40px rgba(0,180,255,0.12), inset 0 0 40px rgba(0,180,255,0.04);
+          border-color: #22d3ee !important;
+          background: rgba(34,211,238,0.08) !important;
+          box-shadow: 0 0 40px rgba(34,211,238,0.12);
         }
-        .pills-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
+        .pills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .feature-pill {
           display: flex; align-items: center; justify-content: center; gap: 7px;
-          padding: 10px 12px;
-          border: 1px solid rgba(0,180,255,0.15);
-          border-radius: 10px;
-          font-size: 11px;
-          color: rgba(150,200,255,0.75);
-          font-family: 'Space Mono', monospace;
-          background: rgba(0,180,255,0.04);
-          transition: all 0.2s;
-        }
-        .feature-pill:hover {
-          border-color: rgba(0,180,255,0.4);
-          color: rgba(150,200,255,1);
-          background: rgba(0,180,255,0.08);
+          padding: 11px 12px;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 12px;
+          font-size: 13px;
+          color: #b9c7d8;
+          background: rgba(255,255,255,0.04);
         }
         .ext-tag {
-          background: rgba(0,180,255,0.08);
-          color: #00b4ff;
-          border: 1px solid rgba(0,180,255,0.25);
-          border-radius: 6px;
+          background: rgba(34,211,238,0.1);
+          color: #22d3ee;
+          border: 1px solid rgba(34,211,238,0.3);
+          border-radius: 8px;
           padding: 5px 14px;
-          font-size: 12px;
-          font-family: 'Space Mono', monospace;
-          letter-spacing: 0.05em;
-        }
-        .corner-tl, .corner-tr, .corner-bl, .corner-br {
-          position: absolute; width: 14px; height: 14px;
-        }
-        .corner-tl { top: 12px; left: 12px; border-top: 1.5px solid #00b4ff; border-left: 1.5px solid #00b4ff; border-radius: 3px 0 0 0; }
-        .corner-tr { top: 12px; right: 12px; border-top: 1.5px solid #00b4ff; border-right: 1.5px solid #00b4ff; border-radius: 0 3px 0 0; }
-        .corner-bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid #00b4ff; border-left: 1.5px solid #00b4ff; border-radius: 0 0 0 3px; }
-        .corner-br { bottom: 12px; right: 12px; border-bottom: 1.5px solid #00b4ff; border-right: 1.5px solid #00b4ff; border-radius: 0 0 3px 0; }
-        .scanline {
-          position: fixed; left: 0; right: 0; height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(0,180,255,0.4), transparent);
-          animation: scanline 3.5s linear infinite;
-          pointer-events: none; z-index: 1;
+          font-size: 13px;
+          font-weight: 600;
         }
         @media (max-width: 480px) {
-          .pharma-title { font-size: 36px !important; letter-spacing: 0 !important; }
-          .pharma-eyebrow { font-size: 8px !important; letter-spacing: 0.1em !important; }
+          .pharma-title { font-size: 32px !important; }
           .drop-zone { padding: 28px 18px !important; }
-          .drop-zone-dna { font-size: 38px !important; }
-          .drop-zone-title { font-size: 16px !important; }
-          .privacy-text { font-size: 8px !important; letter-spacing: 0.03em !important; }
-        }
-        @media (max-width: 360px) {
-          .pharma-title { font-size: 30px !important; }
+          .drop-zone-title { font-size: 17px !important; }
         }
       `}</style>
 
-      {/* Background */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(0,180,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,180,255,0.06) 1px, transparent 1px)", backgroundSize: "48px 48px", animation: "grid-drift 8s linear infinite", pointerEvents: "none" }} />
-      <div style={{ position: "fixed", top: "15%", left: "10%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,87,168,0.18) 0%, transparent 70%)", animation: "orb1 8s ease-in-out infinite", pointerEvents: "none" }} />
-      <div style={{ position: "fixed", bottom: "10%", right: "8%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,140,200,0.12) 0%, transparent 70%)", animation: "orb2 10s ease-in-out infinite", pointerEvents: "none" }} />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,60,120,0.1) 0%, transparent 70%)", animation: "orb3 12s ease-in-out infinite", pointerEvents: "none" }} />
-      <div className="scanline" />
+      {/* grid background */}
+      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%)", WebkitMaskImage: "radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%)", pointerEvents: "none" }} />
 
-      {/* ── Content ── */}
-      <div style={{ position: "relative", maxWidth: 480, width: "100%", padding: "0 20px", zIndex: 2 }}>
+      <div style={{ position: "relative", maxWidth: 520, width: "100%", padding: "0 20px", zIndex: 2 }}>
 
-        {/* Header */}
         <div className="upload-card" style={{ textAlign: "center", marginBottom: 28 }}>
+          <a href="/landing.html" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 22 }}>
+            <span style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#14b8a6,#22d3ee)", display: "grid", placeItems: "center", color: "#071a2f", fontSize: 18 }}>◎</span>
+            <span style={{ fontWeight: 800, fontSize: 22, color: "#fff" }}>PharmaLens</span>
+          </a>
 
-          {/* Status badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 22, background: "rgba(0,180,255,0.07)", border: "1px solid rgba(0,180,255,0.2)", borderRadius: 99, padding: "5px 14px" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00e676", boxShadow: "0 0 8px #00e676", display: "inline-block", animation: "glow-flicker 2s ease-in-out infinite" }} />
-            <span style={{ fontSize: 10, color: "rgba(150,220,255,0.8)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.15em", textTransform: "uppercase" }}>AI System Online</span>
+          <div style={{ marginBottom: 18 }}>
+            <span style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#22d3ee", border: "1px solid rgba(34,211,238,.35)", padding: "6px 12px", borderRadius: 999 }}>Private by design · Free demo</span>
           </div>
 
-          {/* Icon — stacked above title on mobile */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-            <div style={{ position: "relative", width: 52, height: 52 }}>
-              <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(0,180,255,0.4)", animation: "pulse-ring 2s ease-out infinite" }} />
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: "linear-gradient(135deg, #0057a8, #0891b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, boxShadow: "0 0 24px rgba(0,180,255,0.4)" }}>⚕️</div>
-            </div>
+          <div className="pharma-title" style={{ fontSize: 38, fontWeight: 800, color: "#ffffff", lineHeight: 1.12, letterSpacing: "-0.01em", marginBottom: 16 }}>
+            Upload your data. Get <span style={{ background: "linear-gradient(90deg,#14b8a6,#22d3ee)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>defensible insights</span> in seconds.
           </div>
 
-          {/* Eyebrow */}
-          <div className="pharma-eyebrow" style={{ fontSize: 9, letterSpacing: "0.22em", color: "rgba(0,180,255,0.6)", textTransform: "uppercase", fontFamily: "'Space Mono', monospace", marginBottom: 6 }}>
-            Clinical Research Intelligence
-          </div>
-
-          {/* Title — full width, centered, never clips */}
-          <div className="pharma-title" style={{ fontSize: 44, fontWeight: 800, color: "#ffffff", lineHeight: 1, fontFamily: "'Syne', sans-serif", letterSpacing: "-0.01em", marginBottom: 16, wordBreak: "keep-all", overflow: "visible" }}>
-            Pharma<span style={{ color: "#00b4ff", textShadow: "0 0 20px rgba(0,180,255,0.5)" }}>Lens</span>
-          </div>
-
-          <p style={{ color: "rgba(150,200,255,0.65)", fontSize: 14, lineHeight: 1.75, fontFamily: "'Syne', sans-serif", fontWeight: 400, padding: "0 4px" }}>
-            Drop any clinical dataset. Get <span style={{ color: "rgba(0,180,255,0.9)" }}>AI-generated insights</span>, statistical analysis, and a board-ready PDF — in under 60 seconds.
+          <p style={{ color: "#b9c7d8", fontSize: 15, lineHeight: 1.7, padding: "0 4px" }}>
+            Statistics are computed in code. AI explains the results in plain language. Export one report for your team.
           </p>
         </div>
 
-        {/* Drop zone */}
         <div className="upload-card-delay1">
           <div className="drop-zone"
             onClick={() => fileRef.current.click()}
@@ -670,13 +600,11 @@ export default function PharmaLens() {
             onDragLeave={() => setDrag(false)}
             onDrop={onDrop}
           >
-            <div className="corner-tl" /><div className="corner-tr" />
-            <div className="corner-bl" /><div className="corner-br" />
-            <div className="drop-zone-dna" style={{ fontSize: 48, marginBottom: 14, filter: "drop-shadow(0 0 16px rgba(0,180,255,0.5))" }}>🧬</div>
-            <div className="drop-zone-title" style={{ fontWeight: 700, fontSize: 19, color: "#ffffff", marginBottom: 8, fontFamily: "'Syne', sans-serif" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, margin: "0 auto 14px", background: "rgba(34,211,238,.12)", display: "grid", placeItems: "center", fontSize: 28 }}>📂</div>
+            <div className="drop-zone-title" style={{ fontWeight: 700, fontSize: 19, color: "#ffffff", marginBottom: 8 }}>
               {drag ? "Release to analyze" : "Tap to upload or drop file"}
             </div>
-            <div style={{ color: "rgba(150,200,255,0.5)", fontSize: 12, marginBottom: 20, fontFamily: "'Syne', sans-serif" }}>
+            <div style={{ color: "#8fa3ba", fontSize: 13, marginBottom: 20 }}>
               Clinical trial data · patient records · research CSVs
             </div>
             <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
@@ -686,24 +614,22 @@ export default function PharmaLens() {
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={e => processFile(e.target.files[0])} />
         </div>
 
-        {error && <div style={{ marginTop: 12, color: "#ef4444", fontSize: 12, textAlign: "center", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+        {error && <div style={{ marginTop: 12, color: "#fca5a5", fontSize: 13, textAlign: "center" }}>⚠ {error}</div>}
 
-        {/* Feature pills — 2x2 grid on mobile */}
         <div className="upload-card-delay2 pills-grid" style={{ marginTop: 20 }}>
           {[["🔬", "AI Insights"], ["📊", "Visualizations"], ["📋", "Stats Tables"], ["📄", "PDF Export"]].map(([icon, label]) => (
             <div key={label} className="feature-pill"><span>{icon}</span><span>{label}</span></div>
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="upload-card-delay3" style={{ marginTop: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-          <div className="privacy-text" style={{ fontSize: 9, color: "rgba(100,160,200,0.4)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.07em", textAlign: "center", lineHeight: 1.7 }}>
-            DATA STAYS IN YOUR BROWSER · NO SERVER UPLOAD · HIPAA-AWARE
+        <div className="upload-card-delay3" style={{ marginTop: 26, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}>
+          <div style={{ fontSize: 12, color: "#8fa3ba", lineHeight: 1.7 }}>
+            Your raw records stay in your browser · Demo limit: 5 analyses per day
           </div>
-          <div style={{ fontSize: 11, color: "rgba(100,160,200,0.4)", fontFamily: "'Space Mono', monospace" }}>
-            Built by{" "}
+          <div style={{ fontSize: 12, color: "#8fa3ba" }}>
+            Developed by{" "}
             <a href="https://rezoansultan.com" target="_blank" rel="noopener noreferrer"
-              style={{ color: "#00b4ff", textDecoration: "none", borderBottom: "1px solid rgba(0,180,255,0.3)", paddingBottom: 1 }}>
+              style={{ color: "#22d3ee", textDecoration: "none", borderBottom: "1px solid rgba(34,211,238,0.35)", paddingBottom: 1 }}>
               Rezoan Sultan
             </a>
           </div>
@@ -714,22 +640,22 @@ export default function PharmaLens() {
 
   // ── ANALYZING ─────────────────────────────────────────────────────────────
   if (stage === "analyzing") return (
-    <div style={{ ...commonStyle, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ ...commonStyle, background: T.navy, color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin:0; padding:0; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
       `}</style>
       <div style={{ textAlign: "center", maxWidth: 400 }}>
-        <div style={{ width: 56, height: 56, border: `3px solid ${T.border}`, borderTop: `3px solid ${T.primary}`, borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 24px" }} />
-        <div style={{ fontSize: 20, fontWeight: 700, color: T.text, marginBottom: 6 }}>Analyzing Dataset</div>
-        <div style={{ color: T.primary, fontSize: 13, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 4 }}>{fileName}</div>
-        <div style={{ color: T.muted, fontSize: 13, marginBottom: 28, animation: "pulse 2s ease-in-out infinite" }}>{progressLabel}</div>
-        <div style={{ background: T.border, borderRadius: 99, height: 6, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${T.primary}, ${T.teal})`, borderRadius: 99, transition: "width 0.5s ease" }} />
+        <div style={{ width: 56, height: 56, border: `3px solid rgba(255,255,255,.12)`, borderTop: `3px solid #22d3ee`, borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 24px" }} />
+        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Analyzing your dataset</div>
+        <div style={{ color: "#22d3ee", fontSize: 13, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", marginBottom: 4 }}>{fileName}</div>
+        <div style={{ color: "#b9c7d8", fontSize: 14, marginBottom: 28, animation: "pulse 2s ease-in-out infinite" }}>{progressLabel}</div>
+        <div style={{ background: "rgba(255,255,255,.12)", borderRadius: 99, height: 6, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, #14b8a6, #22d3ee)`, borderRadius: 99, transition: "width 0.5s ease" }} />
         </div>
-        <div style={{ marginTop: 8, fontSize: 12, color: T.faint, fontFamily: "'IBM Plex Mono', monospace" }}>{progress}%</div>
+        <div style={{ marginTop: 8, fontSize: 12, color: "#8fa3ba", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{progress}%</div>
       </div>
     </div>
   );
@@ -745,7 +671,7 @@ export default function PharmaLens() {
   return (
     <div style={commonStyle}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: ${T.surface}; }
@@ -760,29 +686,29 @@ export default function PharmaLens() {
 
       {/* Top Nav */}
       <div style={{
-        background: T.white, borderBottom: `1px solid ${T.border}`, padding: "0 28px",
+        background: T.navy, borderBottom: "1px solid rgba(255,255,255,.08)", padding: "0 28px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         height: 60, position: "sticky", top: 0, zIndex: 100,
-        boxShadow: "0 1px 8px rgba(0,87,168,0.07)",
+        boxShadow: "0 2px 14px rgba(7,26,47,0.25)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: T.primary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>⚕️</div>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#14b8a6,#22d3ee)", color: T.navy, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>◎</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: T.primary, fontFamily: "'Source Serif 4', serif", lineHeight: 1 }}>PharmaLens</div>
-            <div style={{ fontSize: 10, color: T.muted, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.06em" }}>CLINICAL INTELLIGENCE</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: "#fff", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", lineHeight: 1 }}>PharmaLens</div>
+            <div style={{ fontSize: 10, color: "#8fa3ba", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", letterSpacing: "0.06em" }}>CLINICAL INTELLIGENCE</div>
           </div>
-          <div style={{ width: 1, height: 28, background: T.border, margin: "0 8px" }} />
-          <span style={{ fontSize: 13, color: T.muted, maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</span>
+          <div style={{ width: 1, height: 28, background: "rgba(255,255,255,.14)", margin: "0 8px" }} />
+          <span style={{ fontSize: 13, color: "#b9c7d8", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ background: T.primaryLight, color: T.primary, border: `1px solid ${T.primary}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>n = {rawData.length.toLocaleString()}</span>
-          <span style={{ background: T.tealLight, color: T.teal, border: `1px solid ${T.teal}33`, borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }}>{columns.length} variables</span>
+          <span style={{ background: "rgba(34,211,238,.12)", color: "#22d3ee", border: "1px solid rgba(34,211,238,.3)", borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>n = {rawData.length.toLocaleString()}</span>
+          <span style={{ background: "rgba(20,184,166,.14)", color: "#5eead4", border: "1px solid rgba(20,184,166,.35)", borderRadius: 99, padding: "3px 12px", fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{columns.length} variables</span>
           <button onClick={() => exportPDF(fileName, rawData, columns, numericCols, catCols, numericStats, insights)}
-            style={{ background: T.primary, color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+            style={{ background: "linear-gradient(135deg,#14b8a6,#22d3ee)", color: T.navy, border: "none", borderRadius: 10, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
             📄 Export PDF
           </button>
           <button onClick={() => { setStage("upload"); setRawData([]); }}
-            style={{ background: T.white, color: T.muted, border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontFamily: "'Source Serif 4', serif" }}>
+            style={{ background: "transparent", color: "#d5e0ec", border: "1px solid rgba(255,255,255,.25)", borderRadius: 10, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>
             ↩ New File
           </button>
         </div>
@@ -796,7 +722,7 @@ export default function PharmaLens() {
               background: activeTab === t.key ? T.primaryLight : "transparent",
               border: "none", borderBottom: activeTab === t.key ? `2px solid ${T.primary}` : "2px solid transparent",
               color: activeTab === t.key ? T.primary : T.muted,
-              padding: "12px 18px", fontSize: 13, fontFamily: "'Source Serif 4', serif",
+              padding: "12px 18px", fontSize: 13, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif",
               fontWeight: activeTab === t.key ? 600 : 400,
             }}>
             {t.icon} {t.label}
@@ -829,7 +755,7 @@ export default function PharmaLens() {
               <div style={{ flex: 2, minWidth: 260 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <span style={{ fontSize: 16 }}>📂</span>
-                  <span style={{ fontWeight: 700, fontSize: 14, color: T.text, fontFamily: "'Source Serif 4', serif" }}>Dataset Information</span>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: T.text, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>Dataset Information</span>
                 </div>
                 <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7 }}>
                   <strong style={{ color: T.text }}>File:</strong> {fileName}<br />
@@ -839,7 +765,7 @@ export default function PharmaLens() {
                 </div>
               </div>
               <div style={{ flex: 1, minWidth: 200, borderLeft: `1px solid ${T.border}`, paddingLeft: 24 }}>
-                <div style={{ fontSize: 11, color: T.faint, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Analysis Summary</div>
+                <div style={{ fontSize: 11, color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Analysis Summary</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {[
                     ["Total Variables", columns.length],
@@ -849,7 +775,7 @@ export default function PharmaLens() {
                   ].map(([label, val]) => (
                     <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                       <span style={{ color: T.muted }}>{label}</span>
-                      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, color: T.text }}>{val}</span>
+                      <span style={{ fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontWeight: 600, color: T.text }}>{val}</span>
                     </div>
                   ))}
                 </div>
@@ -858,7 +784,7 @@ export default function PharmaLens() {
             </div>
 
             {/* AI Insights */}
-            <Panel title="AI Clinical Insights" subtitle="Automatically generated based on your dataset's statistical profile" badge="by Rebiconn" fullWidth>
+            <Panel title="AI Clinical Insights" subtitle="Automatically generated based on your dataset's statistical profile" badge="AI-generated" fullWidth>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 10 }}>
                 {insights.map((ins, i) => <InsightPill key={i} text={ins} index={i} />)}
               </div>
@@ -873,7 +799,7 @@ export default function PharmaLens() {
                   <thead>
                     <tr style={{ background: T.surface }}>
                       {["Variable", "Type", "n", "Mean", "Median", "Min", "Max", "Std Dev", "IQR", "Outliers"].map(h => (
-                        <th key={h} style={{ padding: "10px 14px", textAlign: h === "Variable" || h === "Type" ? "left" : "right", color: T.muted, fontWeight: 600, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: "0.05em", borderBottom: `2px solid ${T.border}`, whiteSpace: "nowrap" }}>{h}</th>
+                        <th key={h} style={{ padding: "10px 14px", textAlign: h === "Variable" || h === "Type" ? "left" : "right", color: T.muted, fontWeight: 600, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontSize: 10, letterSpacing: "0.05em", borderBottom: `2px solid ${T.border}`, whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -882,20 +808,20 @@ export default function PharmaLens() {
                       const s = numericCols.includes(col) ? colStats(rawData, col) : null;
                       return (
                         <tr key={col} className="row-hover" style={{ borderBottom: `1px solid ${T.border}` }}>
-                          <td style={{ padding: "9px 14px", fontWeight: 500, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>{col}</td>
+                          <td style={{ padding: "9px 14px", fontWeight: 500, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontSize: 12 }}>{col}</td>
                           <td style={{ padding: "9px 14px" }}>
-                            <span style={{ background: s ? T.primaryLight : T.amberLight, color: s ? T.primary : T.amber, borderRadius: 99, padding: "2px 8px", fontSize: 10, fontFamily: "'IBM Plex Mono', monospace" }}>
+                            <span style={{ background: s ? T.primaryLight : T.amberLight, color: s ? T.primary : T.amber, borderRadius: 99, padding: "2px 8px", fontSize: 10, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>
                               {s ? "numeric" : "categorical"}
                             </span>
                           </td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: T.muted }}>{s ? s.count : rawData.length}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace" }}>{s ? fmt(s.mean) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace" }}>{s ? fmt(s.median) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: T.muted }}>{s ? fmt(s.min) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: T.muted }}>{s ? fmt(s.max) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace" }}>{s ? fmt(s.std) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: T.muted }}>{s ? fmt(s.q3 - s.q1) : "—"}</td>
-                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", color: s?.outliers > 0 ? T.amber : T.green, fontWeight: s?.outliers > 0 ? 600 : 400 }}>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: T.muted }}>{s ? s.count : rawData.length}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{s ? fmt(s.mean) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{s ? fmt(s.median) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: T.muted }}>{s ? fmt(s.min) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: T.muted }}>{s ? fmt(s.max) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{s ? fmt(s.std) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: T.muted }}>{s ? fmt(s.q3 - s.q1) : "—"}</td>
+                          <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: s?.outliers > 0 ? T.amber : T.green, fontWeight: s?.outliers > 0 ? 600 : 400 }}>
                             {s ? (s.outliers > 0 ? `⚠ ${s.outliers}` : "✓ 0") : "—"}
                           </td>
                         </tr>
@@ -917,7 +843,7 @@ export default function PharmaLens() {
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={numericStats.slice(0, 10).map(s => ({ name: s.key.length > 14 ? s.key.slice(0, 13) + "…" : s.key, Mean: +s.stats.mean.toFixed(2) }))} barSize={36}>
                     <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
-                    <XAxis dataKey="name" tick={{ fill: T.muted, fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }} />
+                    <XAxis dataKey="name" tick={{ fill: T.muted, fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }} />
                     <YAxis tickFormatter={fmt} tick={{ fill: T.muted, fontSize: 10 }} />
                     <Tooltip content={<ClinicalTooltip />} />
                     <Bar dataKey="Mean" radius={[5, 5, 0, 0]}>
@@ -944,7 +870,7 @@ export default function PharmaLens() {
                     <XAxis dataKey="i" tick={{ fill: T.muted, fontSize: 10 }} label={{ value: "Record Index", position: "insideBottom", offset: -2, fill: T.muted, fontSize: 11 }} />
                     <YAxis tickFormatter={fmt} tick={{ fill: T.muted, fontSize: 10 }} />
                     <Tooltip content={<ClinicalTooltip />} />
-                    <Legend wrapperStyle={{ fontSize: 12, color: T.muted, fontFamily: "'IBM Plex Mono', monospace" }} />
+                    <Legend wrapperStyle={{ fontSize: 12, color: T.muted, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }} />
                     {numericCols.slice(0, 3).map((c, i) => (
                       <Area key={c} type="monotone" dataKey={c} stroke={T.chartColors[i]} fill={`url(#g${i})`} strokeWidth={2} dot={false} />
                     ))}
@@ -975,7 +901,7 @@ export default function PharmaLens() {
                     <XAxis dataKey="name" tick={{ fill: T.muted, fontSize: 10 }} />
                     <YAxis tickFormatter={fmt} tick={{ fill: T.muted, fontSize: 10 }} />
                     <Tooltip content={<ClinicalTooltip />} />
-                    <Legend wrapperStyle={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace" }} />
+                    <Legend wrapperStyle={{ fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }} />
                     <Bar dataKey="Min" fill={T.rose} radius={[3, 3, 0, 0]} barSize={12} />
                     <Bar dataKey="Mean" fill={T.primary} radius={[3, 3, 0, 0]} barSize={12} />
                     <Bar dataKey="Max" fill={T.green} radius={[3, 3, 0, 0]} barSize={12} />
@@ -1009,7 +935,7 @@ export default function PharmaLens() {
                       <div style={{ flex: 2, height: 5, background: T.surface, borderRadius: 3, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${(d.value / data[0].value) * 100}%`, background: T.chartColors[i % T.chartColors.length], borderRadius: 3 }} />
                       </div>
-                      <div style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: T.text, minWidth: 30, textAlign: "right" }}>{d.value}</div>
+                      <div style={{ fontSize: 11, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", color: T.text, minWidth: 30, textAlign: "right" }}>{d.value}</div>
                     </div>
                   ))}
                 </div>
@@ -1021,16 +947,16 @@ export default function PharmaLens() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
                   {[["Mean", s.stats.mean, T.primary], ["Median", s.stats.median, T.teal], ["Std Dev", s.stats.std, T.violet], ["Min", s.stats.min, T.green], ["Max", s.stats.max, T.amber], ["Outliers", s.stats.outliers, s.stats.outliers > 0 ? T.rose : T.green]].map(([lbl, val, color]) => (
                     <div key={lbl} style={{ background: T.surface, borderRadius: 8, padding: "10px 10px", border: `1px solid ${T.border}` }}>
-                      <div style={{ fontSize: 10, color: T.faint, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.05em" }}>{lbl}</div>
-                      <div style={{ fontSize: 17, fontWeight: 700, color, fontFamily: "'Source Serif 4', serif" }}>{fmt(val)}</div>
+                      <div style={{ fontSize: 10, color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.05em" }}>{lbl}</div>
+                      <div style={{ fontSize: 17, fontWeight: 700, color, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{fmt(val)}</div>
                     </div>
                   ))}
                 </div>
                 {/* Distribution bar */}
                 <div style={{ background: T.surface, borderRadius: 10, padding: "12px 14px", border: `1px solid ${T.border}` }}>
-                  <div style={{ fontSize: 11, color: T.muted, marginBottom: 8, fontFamily: "'IBM Plex Mono', monospace" }}>RANGE VISUALIZATION</div>
+                  <div style={{ fontSize: 11, color: T.muted, marginBottom: 8, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>RANGE VISUALIZATION</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 10, color: T.faint, fontFamily: "'IBM Plex Mono', monospace", minWidth: 40 }}>{fmt(s.stats.min)}</span>
+                    <span style={{ fontSize: 10, color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", minWidth: 40 }}>{fmt(s.stats.min)}</span>
                     <div style={{ flex: 1, height: 12, background: T.border, borderRadius: 6, position: "relative", overflow: "hidden" }}>
                       {/* IQR band */}
                       <div style={{
@@ -1049,7 +975,7 @@ export default function PharmaLens() {
                         left: `${((s.stats.median - s.stats.min) / (s.stats.max - s.stats.min)) * 100}%`,
                       }} />
                     </div>
-                    <span style={{ fontSize: 10, color: T.faint, fontFamily: "'IBM Plex Mono', monospace", minWidth: 40, textAlign: "right" }}>{fmt(s.stats.max)}</span>
+                    <span style={{ fontSize: 10, color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", minWidth: 40, textAlign: "right" }}>{fmt(s.stats.max)}</span>
                   </div>
                   <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 10, color: T.muted }}>
                     <span style={{ display: "flex", gap: 4, alignItems: "center" }}><span style={{ width: 10, height: 3, background: T.primary, display: "inline-block", borderRadius: 2 }} />Mean</span>
@@ -1074,7 +1000,7 @@ export default function PharmaLens() {
                   placeholder="🔍  Search records…"
                   style={{
                     border: `1px solid ${T.border}`, borderRadius: 8, padding: "7px 14px",
-                    fontSize: 13, fontFamily: "'Source Serif 4', serif", background: T.white,
+                    fontSize: 13, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", background: T.white,
                     color: T.text, width: 220, transition: "all 0.2s",
                   }}
                 />
@@ -1087,9 +1013,9 @@ export default function PharmaLens() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead style={{ position: "sticky", top: 0, background: T.surface, zIndex: 5 }}>
                     <tr>
-                      <th style={{ padding: "10px 14px", borderBottom: `2px solid ${T.border}`, textAlign: "left", color: T.faint, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, fontWeight: 600 }}>#</th>
+                      <th style={{ padding: "10px 14px", borderBottom: `2px solid ${T.border}`, textAlign: "left", color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontSize: 10, fontWeight: 600 }}>#</th>
                       {columns.map(col => (
-                        <th key={col} style={{ padding: "10px 14px", borderBottom: `2px solid ${T.border}`, textAlign: "left", color: T.muted, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap", minWidth: 110 }}>
+                        <th key={col} style={{ padding: "10px 14px", borderBottom: `2px solid ${T.border}`, textAlign: "left", color: T.muted, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap", minWidth: 110 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                             <span style={{ width: 6, height: 6, borderRadius: "50%", background: numericCols.includes(col) ? T.primary : T.amber, display: "inline-block", flexShrink: 0 }} />
                             {col}
@@ -1101,9 +1027,9 @@ export default function PharmaLens() {
                   <tbody>
                     {filteredRows.slice(0, 300).map((row, ri) => (
                       <tr key={ri} className="row-hover" style={{ borderBottom: `1px solid ${T.border}` }}>
-                        <td style={{ padding: "7px 14px", color: T.faint, fontFamily: "'IBM Plex Mono', monospace" }}>{ri + 1}</td>
+                        <td style={{ padding: "7px 14px", color: T.faint, fontFamily: "'Amasis MT Pro', Bitter, Georgia, serif" }}>{ri + 1}</td>
                         {columns.map(col => (
-                          <td key={col} style={{ padding: "7px 14px", color: numericCols.includes(col) ? T.primary : T.text, fontFamily: numericCols.includes(col) ? "'IBM Plex Mono', monospace" : "inherit", whiteSpace: "nowrap", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <td key={col} style={{ padding: "7px 14px", color: numericCols.includes(col) ? T.primary : T.text, fontFamily: numericCols.includes(col) ? "'Amasis MT Pro', Bitter, Georgia, serif" : "inherit", whiteSpace: "nowrap", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>
                             {String(row[col] ?? "")}
                           </td>
                         ))}
